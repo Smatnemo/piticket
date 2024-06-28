@@ -9,6 +9,11 @@ Intended Features
 -----------------
 
 * Interface would be available in English, Hausa, Igbo, Pidgin English, Tiv, Yoruba 
-* A local menu to alter settings of the application 
+* A local menu to alter settings of the application. The settings are available in the database.
 * Renew train ticket card through NFC card reader
 * Take payment using notes and cards 
+* Print tickets using CUPS server
+* Highly customizable because it uses plugins
+* Screen saver option available to be either picture or video
+
+
