@@ -4,7 +4,7 @@
 
 The ``Piticket`` Project provides a ticket application *out-of-the-box* in pure Python
 for Raspberry Pi. The project is intended for production but can be used for learning.
-
+The full documentation of piticket will be available at `https://documentation.piticket.com`
 Intended Features
 -----------------
 
@@ -15,5 +15,3 @@ Intended Features
 * Print tickets using CUPS server
 * Highly customizable because it uses plugins
 * Screen saver option available to be either picture or video
-
-
