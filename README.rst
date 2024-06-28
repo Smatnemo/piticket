@@ -15,3 +15,4 @@ Intended Features
 * Print tickets using CUPS server
 * Highly customizable because it uses plugins
 * Screen saver option available to be either picture or video
+* Sounds are enabled for visually impaired
