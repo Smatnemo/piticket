@@ -2,7 +2,7 @@
 
 |PythonVersions| |PypiPackage| |Downloads| |Tests| |Codecov|
 
-The ``Piticket`` Project provides a photobooth application *out-of-the-box* in pure Python
+The ``Piticket`` Project provides a ticket application *out-of-the-box* in pure Python
 for Raspberry Pi. The project is intended for production but can be used for learning.
 
 Intended Features
