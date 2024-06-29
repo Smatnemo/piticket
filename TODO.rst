@@ -1,7 +1,4 @@
 This is a list of the features to implement from a technical point
-* Create a logging system
--- log to file
--- log to standard output
 * Create views package for managing window and backgrounds
 * Create plugin system using pluggy
 * Create a database package 
@@ -13,3 +10,6 @@ This is a list of the features to implement from a technical point
 
 
 Completed list 
+* Create a logging system - done
+-- log to file - done
+-- log to standard output - done
