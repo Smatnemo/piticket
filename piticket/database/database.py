@@ -15,24 +15,25 @@ class DB:
         """
         self.filename = filename
         self.is_open = False
-        self._conn = self.open()
-        self._cursor = self._conn.cursor()
+        self._conn = None
+        self._cursor = None
+        self.open()
         
-    
     def open(self):
         """Open database and return a connection to the database.
         """
         if not self.is_open:
-            conn = Database.Connection(self.filename)
+            self._conn = Database.Connection(self.filename)
+            self._cursor = self._conn.cursor()
             self.is_open = True
-            return conn 
+            return 
         self.is_open = False
 
     def close(self):
         """Close the connection to the database.
         """
         if self.is_open:
-            self._cursor.commit()
+            self._conn.commit()
             self._conn.close()
             self.is_open = False
 
