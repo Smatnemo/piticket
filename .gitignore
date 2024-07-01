@@ -40,10 +40,12 @@ pip-delete-this-directory.txt
 # pyenv 
 .python-version
 
-
 # database
 *.db
 
 # Mac files
 .DS_Store
 *.DS_Store
+
+# Logs
+*.log
