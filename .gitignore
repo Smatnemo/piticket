@@ -43,3 +43,6 @@ pip-delete-this-directory.txt
 
 # database
 *.db
+
+# Mac files
+*.DS_Store
