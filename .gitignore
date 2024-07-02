@@ -48,4 +48,4 @@ pip-delete-this-directory.txt
 *.DS_Store
 
 # Logs
-*.log
+*piticket.log
