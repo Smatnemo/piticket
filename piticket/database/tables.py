@@ -11,12 +11,14 @@ class WindowSettings(Model):
     """This setting is for Windows"""
     def __init__(self, db, fields):
         Model.__init__(self, db, fields)
-        
+
 def main():
     db = DB('assets/piticket.db')
     fields = [Field('ord_id', 'INTEGER', primary_key=True, autoincrement=True), Field('product_id', 'INTEGER'), Field('price', 'FLOAT(6,2)')]
     order = Orders(db, fields)
+    order.insert(**{'ord_id':2})
     print(order)
-    print(order.fetchone(1))
+    
+    
 if __name__ == '__main__':
     main()

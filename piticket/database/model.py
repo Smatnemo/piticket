@@ -30,6 +30,9 @@ class Model:
         self.create()
         self.fetchall()
 
+    def __str__(self):
+        return f"<Table:{self.__class__.__name__}, Column Description:{self.column_description}>"
+
     def __len__(self):
         return len(self._records)
 
@@ -46,14 +49,23 @@ class Model:
         """
         # Created query
         query = f"""INSERT INTO {self.__class__.__name__} ("""
-        for column_name in self.column_names:
-            query += f" {column_name},"
+        data = []
+        for key, value in kwargs.items():
+            if key not in self.column_names:
+                raise ValueError('Column name {} is not a valid field'.format(key))
+            query += f" {key},"
+            data.append(value)
         query = query.strip(',')
         query += ") VALUES ("
-        for i in range(len(self.column_names)):
+        for i in range(len(kwargs)):
             query += " ?,"
         query = query.strip(',')
         query += ");"
+
+        data = tuple(data)
+        # print(query)
+        # print(data)
+        # exit()
         # Execute query in the database
         self._db.open()
         self._db._cursor.execute(query, data)
@@ -96,7 +108,7 @@ class Model:
         self._db._cursor.execute(query)
         self.column_names = list(map(lambda x: x[0], 
                                 self._db._cursor.description))
-        self.column_description = self._db._cusor.description
+        self.column_description = self._db._cursor.description
         records = self._db._cursor.fetchall()
         self._db.close()
         for record in records:
@@ -107,6 +119,14 @@ class Model:
         
             
 class Record():
+    """A record represents a row of a table. It cannot modify a table. Each record is updated
+        when the database table is updated.
+    :attr data: This holds a dictionary of key value pairs, where the key is the name of
+                 the column and the value is the value of that field
+    :type data: dict
+    :attr table: the name of the table a record is in
+    :type table: str§§§                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+    """
     def __init__(self, table, **kwargs):
         self.data = kwargs
         self.table = table
@@ -146,8 +166,12 @@ class Record():
 
 
 class Field:
+    """Use field to create columns in database. Give name and type at least to describe a field.
+    All fields should be nullable to make it easy to create. only the primary field should not be
+    null.
+    """
     def __init__(
-        self, name, f_type, null=False, primary_key=False, autoincrement=False, foreign_key=False
+        self, name, f_type, null=True, primary_key=False, autoincrement=False, foreign_key=False
         ):
         self.name = name 
         self.type = f_type
@@ -159,12 +183,13 @@ class Field:
         self.create()
 
     def __str__(self):
-        return "<name:{},type:{},primary_key:{},autoincrement:{},foreign_key:{}>"\
-        .format(self.name,self.type,self.primary_key,self.autoincrement,self.foreign_key)
+        return "<name:{},type:{},null:{},primary_key:{},autoincrement:{},foreign_key:{}>"\
+        .format(self.name,self.type,self.null,self.primary_key,self.autoincrement,self.foreign_key)
     
     def create(self):
         self.params += self.type
         if self.primary_key:
+            self.null = False
             self.params += ' PRIMARY KEY'
         if self.autoincrement:
             self.params += ' AUTOINCREMENT'
