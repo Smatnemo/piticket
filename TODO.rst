@@ -5,6 +5,7 @@ This is a list of the features to implement from a technical point
 * Create pop up box with timer 
 * Create screen division in background 
 * Create buttons, rows, Views using pygame
+* Create pygame main loop
 * Database operations
     - update a single record in a table 
     - update more than one record in a table 
