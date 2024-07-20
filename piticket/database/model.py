@@ -106,6 +106,7 @@ class Model:
         query = f"""SELECT * FROM {self.__class__.__name__}"""
         self._db.open()
         self._db._cursor.execute(query)
+        # Create a list of valid field names when fetching data
         self.column_names = list(map(lambda x: x[0], 
                                 self._db._cursor.description))
         self.column_description = self._db._cursor.description
