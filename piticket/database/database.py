@@ -18,9 +18,12 @@ class DB:
         self._conn = None
         self._cursor = None
         self.open()
+    
+    def __str__(self):
+        return f"{self.__class__.__name__}"
         
     def open(self):
-        """Open database and return a connection to the database.
+        """Open database, return a connection to the database, set the cursor and conn attributes.
         """
         if not self.is_open:
             self._conn = Database.Connection(self.filename)

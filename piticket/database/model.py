@@ -1,4 +1,4 @@
-
+import sqlite3
 
 class Model:
     def __init__(self, db, fields):
@@ -9,9 +9,11 @@ class Model:
         :type _records: list
         :attr fields: a list of Field objects used to create the fields
         :type fields: list
-        :attr column_names: a list of column names
+        :attr column_names: a list of column names queried after creating a model or adding a column
         :type column_names: list
-        :attr column_description: description of all the columns. A tuple of tuples. Each tuple has seven values 
+        :attr column_description: description of all the columns. A tuple of tuples.
+        Attribute is updated when the table is created or a column is added. 
+        Each tuple has seven values 
                 name
                 type_code
                 display_size
@@ -26,15 +28,51 @@ class Model:
         self.column_names = []
         self.column_description = ()
         self._records = []
-        self._updated = False
-        self.create()
-        self.fetchall()
+        self._rows_updated = False
+        self._metadata_updated = False 
+        self.create_table()
+        self._update()
 
     def __str__(self):
         return f"<Table:{self.__class__.__name__}, Column Description:{self.column_description}>"
 
     def __len__(self):
         return len(self._records)
+
+    def _update(self):
+        """Update this current model object"""
+        self._update_metadata()
+        self._update_records()
+
+    def _update_records(self):
+        """Update the list of records"""
+        if self._rows_updated:
+            records = self.fetchall()
+            for record in records:
+                record_dict = {}
+                for k, v in zip(self.column_names, record):
+                    record_dict[k]=v 
+                self._records.append(Record(self.__class__.__name__,**record_dict))
+        self._rows_updated = False
+
+    def _update_metadata(self):
+        """"""
+        if self._metadata_updated:
+            query = f"SELECT * FROM {self.__class__.__name__}"
+            self._db.open()
+            self._db._cursor.execute(query)
+            # Create a list of valid field names when fetching data
+            self.column_names = list(map(lambda x: x[0], 
+                                    self._db._cursor.description))
+            self.column_description = self._db._cursor.description
+            self._db.close()
+        self._metadata_updated = False
+
+    def add_column(self, field):
+        """Add a new column to the table"""
+        query = f"ALTER TABLE ADD {field.name}"
+        self._metadata_updated = True 
+        self._update()
 
     def execute(self, query, data=()):
         self._db.open()
@@ -51,7 +89,7 @@ class Model:
         query = f"""INSERT INTO {self.__class__.__name__} ("""
         data = []
         for key, value in kwargs.items():
-            if key not in self.column_names:
+            if self.column_names and key not in self.column_names:
                 raise ValueError('Column name {} is not a valid field'.format(key))
             query += f" {key},"
             data.append(value)
@@ -63,21 +101,33 @@ class Model:
         query += ");"
 
         data = tuple(data)
-        # print(query)
-        # print(data)
-        # exit()
         # Execute query in the database
         self._db.open()
-        self._db._cursor.execute(query, data)
+        try:
+            self._db._cursor.execute(query, data)
+        except sqlite3.IntegrityError as ex:
+            print('Record exists: ', ex)
         self._db.close()
+        # Updated Model
+        self._rows_updated = True
         
-    def update(self):
-        pass
-    
+    def update(self, id, **kwargs):
+        """Update a record in a table given its id, the column name to be updated
+        and value to change."""
+        query = f"UPDATE {self.__class__.__name__} SET"
+        for k,v in kwargs.items():
+            query += f" {k}='{v}'"
+        f" WHERE {self.column_names[0]}={id}"
+        self._db.open()
+        self._db._cursor.execute(query,data)
+        self._db.close()
+        self._rows_updated = True 
+        # self._update()
+        
     def delete(self):
         pass 
 
-    def create(self):
+    def create_table(self):
         """Create a table from a subclass class' name.
         :param fields: a list of fields to be created
         :type fields: list
@@ -91,9 +141,10 @@ class Model:
         self._db.open()
         self._db._cursor.execute(query)
         self._db.close()
+        self._metadata_updated = True
     
     def fetchone(self, column, value):
-        """Find and return a return a record given its id.
+        """Find and return a record given its id.
         """
         for record in self._records:
             if hasattr(record, column):
@@ -106,17 +157,9 @@ class Model:
         query = f"""SELECT * FROM {self.__class__.__name__}"""
         self._db.open()
         self._db._cursor.execute(query)
-        # Create a list of valid field names when fetching data
-        self.column_names = list(map(lambda x: x[0], 
-                                self._db._cursor.description))
-        self.column_description = self._db._cursor.description
         records = self._db._cursor.fetchall()
         self._db.close()
-        for record in records:
-            record_dict = {}
-            for k, v in zip(self.column_names, record):
-                record_dict[k]=v 
-            self._records.append(Record(self.__class__.__name__,**record_dict))
+        return records
         
             
 class Record():
@@ -130,7 +173,8 @@ class Record():
     """
     def __init__(self, table, **kwargs):
         self.data = kwargs
-        self.table = table
+        self.table = table  
+        self.updated = False
 
     def __str__(self):
         """Dynamically generate and add the name of the columns"""
