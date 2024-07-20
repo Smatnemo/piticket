@@ -1,6 +1,17 @@
 import multiprocessing
 from utils import *
 
+class PiApplication():
+    def __init__(self, cfg, pm):
+        self._pm = pm 
+        self._cfg = cfg
+    
+    def _initialize(self):
+        pass 
+        
+    def main_loop():
+        pass 
+
 def main():
     """Application entry point.
     """
