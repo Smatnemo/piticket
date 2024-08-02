@@ -1,5 +1,13 @@
 import multiprocessing
 import pygame
+import sys
+
+import os.path as osp
+
+PACKAGE_DIR = osp.abspath(osp.dirname(osp.dirname(__file__)))
+print(PACKAGE_DIR)
+sys.path.insert(0, PACKAGE_DIR)
+
 from utils import *
 from views import PiWindow
 
@@ -11,21 +19,33 @@ class PiApplication():
         pass 
         
     def main_loop(self):
-        clk = pygame.time.Clock()
-        fps = 40
-        start = True
+        try:
+            clk = pygame.time.Clock()
+            fps = 40
+            self._initialize()
 
-        while start:
-            events = pygame.event.get()
-            # if pygame.event.QUIT()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    start = False
-            pygame.display.update()
-            clk.tick(fps) # Ensure the program will never run more than 40 frames per second
-        LOGGER.debug('Please check')
-        LOGGER.info('Starting piticket')
-        LOGGER.error('Crashing message')
+            start = True
+
+            while start:
+                # Get events list 
+                events = pygame.event.get()
+
+                for event in events:
+                    if event.type == pygame.QUIT:
+                        start = False
+                        
+                # change color 
+                self.win.show_background()
+
+                pygame.display.update()
+                clk.tick(fps) # Ensure the program will never run more than 40 frames per second
+            
+        except Exception as ex:
+            LOGGER.error(str(ex), exec_info=True)
+            LOGGER.error(get_crash_message())
+        finally:
+            pygame.quit()
+
 
 def main():
     """Application entry point.
