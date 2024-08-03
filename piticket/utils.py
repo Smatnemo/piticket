@@ -99,7 +99,7 @@ def get_logging_filename():
     """
     for hdlr in logging.getLogger().handlers:
         if isinstance(hdlr, logging.FileHandler):
-            return hdler.baseFilename
+            return hdlr.baseFilename
     return None 
 
 def get_crash_message():

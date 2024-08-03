@@ -41,7 +41,7 @@ class PiApplication():
                 clk.tick(fps) # Ensure the program will never run more than 40 frames per second
             
         except Exception as ex:
-            LOGGER.error(str(ex), exec_info=True)
+            LOGGER.error(str(ex))
             LOGGER.error(get_crash_message())
         finally:
             pygame.quit()
