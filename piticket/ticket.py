@@ -5,7 +5,6 @@ import sys
 import os.path as osp
 
 PACKAGE_DIR = osp.abspath(osp.dirname(osp.dirname(__file__)))
-print(PACKAGE_DIR)
 sys.path.insert(0, PACKAGE_DIR)
 
 from utils import *
@@ -53,7 +52,7 @@ def main():
     if hasattr(multiprocessing, 'set_start_method'):
         # Avoid use 'fork': safely forking a multithreaded process is problematic
         multiprocessing.set_start_method('spawn')
-    configure_logging(msgfmt='[ %(levelname)-8s] %(name)-18s: %(message)s', filename='piticket.log')
+    configure_logging(msgfmt='[ %(levelname)-8s] %(name)-18s: %(message)s', filename='/tmp/piticket/piticket.log')
     app = PiApplication()
     app.main_loop()
 

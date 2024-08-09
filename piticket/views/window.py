@@ -30,7 +30,15 @@ class PiWindow():
         self.is_fullscreen = False
         self.surface = pygame.display.set_mode(self.__size, pygame.RESIZABLE)
 
+        self.backgrounds = {}
+        self.current_background = None
+        
+    def _update_background(self, bkgd):
+        # This allows a background to be initialized once and saved in the dictionary, backgrounds
+        self.current_background = self.backgrounds.setdefault(str(bkgd), bkgd)
+        self.current_background.set_color(self.bg_color)
+        self.current_background.set_text_color(self.text_color)
+        self.current_background.paint(self.surface)
 
     def show_background(self):
-        bkg = background.Background(self.bg_color, self.text_color)
-        bkg.paint(self.surface)
+        self._update_background(background.IntroBackground())
