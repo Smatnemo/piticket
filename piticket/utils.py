@@ -72,7 +72,6 @@ def configure_logging(level=logging.INFO, msgfmt=logging.BASIC_FORMAT, datefmt=N
             hdlr.setLevel(logging.DEBUG)
             root.addHandler(hdlr)
 
-
         # Create a console handler 
         hdlr = BlockConsoleHandler(sys.stdout)
         hdlr.setFormatter(logging.Formatter(msgfmt, datefmt))

@@ -34,7 +34,7 @@ class PiApplication():
                         start = False
                         
                 # change color 
-                self.win.show_background()
+                self.win.show_intro()
 
                 pygame.display.update()
                 clk.tick(fps) # Ensure the program will never run more than 40 frames per second

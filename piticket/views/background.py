@@ -1,28 +1,101 @@
 import pygame 
 
-class Background():
-    def __init__(self, image_name, bg_color=(0,0,0), text_color=(255,255,255)):
-        self._bg_color = bg_color 
-        self._text_color = text_color
+def multiline_text_to_surfaces(text, color, rect, align='center'):
+    """Return a list of text surfaces(pygame.Surface) and corresponding positions
+    The ``align```parameter can be one of:
+        * top-left
+        * top-center
+        * top-right
+        * center-left
+        * center
+        * center-right
+        * bottom-left
+        * bottom-center
+        * bottom-right
+    """
+    surfaces = []
+    # split text into list of strings using newline character
+    lines = text.splitlines()
+    # Return the longest  string
+    max_line = max(lines, key=len)
+    # Return a SysFont object
+    font = pygame.font.SysFont('nimbussansnarrow',rect.height//len(lines))
 
+    for i, line in enumerate(lines):
+        surface = font.render(line, True, color)
+        if align.endswith('left'):
+            x = rect.left
+        elif align.endswith('center'):
+            x = rect.centerx - surface.get_rect().width//2
+        elif align.endswith('right'):
+            x = rect.right
+        else:
+            raise ValueError("Invalid horizontal argument '{}'".format(align))
+
+        height = surface.get_rect().height
+        if align.startswith('top'):
+            y = rect.top
+        elif align.startswith('center'):
+            y = rect.centery - (len(lines)*height)//2 + height*i
+        elif align.startswith('bottom'):
+            y = rect.bottom - len(lines)*height + i*height
+        else:
+            raise ValueError("Invalid vertical argument '{}'".format(align))
+   
+        surfaces.append((surface,(x,y)))
+
+    return surfaces
+
+class Background():
+    def __init__(self, image_name, 
+                bg_color=(0,0,0), 
+                text_color=(255,255,255), 
+                font_size=12):
+        """
+        :attr _bg_color: background color
+        :type _bg_color: tuple
+        :attr _text_color: text color
+        :type _text_color: tuple
+        :attr _name: name of the background text to be written
+        :type _name: string
+        :attr _rect: the rectangle of the window
+        :type _rect: pygame.Rect
+        :attr font: is a font object used to render text to pygame surface
+        :type font: pygame.font.SysFont or pygame.font.Font
+
+        """
+        self._bg_color = bg_color 
+        
         self._name = image_name
 
         self._texts = []
-        # Return a SysFont object by passing the name of the font
-        self.font = pygame.font.SysFont('nimbussansnarrow',22)
+        self._text_border = 20 # Distance to other elements
+        self._text_color = text_color
+
+        self.font = None
+        self.font_size = font_size
+
+        self._rect = None
 
     def __str__(self):
-        return "{}".format(self.__class__.__name__)
+        return "{}-{}".format(self._name, self.__class__.__name__)
 
-    def _write_texts(self, text, screen):
+    def _write_texts(self, text, rect=None):
         """Create text surfaces to draw on window surface.
         :param text: text to be written on screen
         :type param: str
+        :param rect: the rect determines the 
         """
+        if not rect:
+            # Reduce the size of the screen's rect by self._text_border
+            rect = self._rect.inflate(-self._text_border, -self._text_border)
         
-        self._texts.append(self.font.render(text,True,self._text_color))
-        if self._texts:
-            screen.blit(self._texts[0],(0,0))
+        if rect.height != self.font_size:
+            self.font_size = rect.height
+
+        self._texts.extend(multiline_text_to_surfaces(text, self._text_color,rect))
+        print(self._texts)
+    
 
     def set_color(self, color_or_path):
         """Set background color using RGB tuple or path to an image
@@ -38,10 +111,28 @@ class Background():
         assert len(color) == 3, "Length of 3 is required (RGB tuple)"
         self._text_color = color
 
+    def resize_texts(self, rect=None):
+        """Resize text pygame surfaces"""
+        self._write_texts('Ticket text\nNext Please step forward!', rect)
+
+    def resize(self, screen):
+        """Resize objects to fit to the screen
+        """
+        if self._rect != screen.get_rect():
+            self._rect = screen.get_rect()
+
+        self.resize_texts()
+
     def paint(self, screen):
         screen.fill(self._bg_color)
-        self._write_texts('Ticket text', screen)
+        for text_surface, pos in self._texts: 
+            screen.blit(text_surface, pos)
+        
 
+
+class VideoBackground():
+    def __init__(self):
+        Background.__init__(self, 'video')
 
 class IntroBackground(Background):
     def __init__(self):

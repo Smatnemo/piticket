@@ -38,7 +38,13 @@ class PiWindow():
         self.current_background = self.backgrounds.setdefault(str(bkgd), bkgd)
         self.current_background.set_color(self.bg_color)
         self.current_background.set_text_color(self.text_color)
+        self.current_background.resize(self.surface)
         self.current_background.paint(self.surface)
 
-    def show_background(self):
+    def show_video(self):
+        self._update_background(background.VideoBackground())
+
+    def show_intro(self):
         self._update_background(background.IntroBackground())
+
+    
