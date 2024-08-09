@@ -33,16 +33,20 @@ class PiWindow():
         self.backgrounds = {}
         self.current_background = None
         
-    def _update_background(self, bkgd):
+    def _update_background(self, bkgd, events=[]):
         # This allows a background to be initialized once and saved in the dictionary, backgrounds
         self.current_background = self.backgrounds.setdefault(str(bkgd), bkgd)
         self.current_background.set_color(self.bg_color)
         self.current_background.set_text_color(self.text_color)
+        self.current_background.handle_events(events)
         self.current_background.resize(self.surface)
         self.current_background.paint(self.surface)
 
-    def show_video(self):
-        self._update_background(background.VideoBackground())
+    def show_video(self, events):
+        """Show video as screen saver in sleep mode
+        """
+        video = '/home/pi/Videos/big_buck_bunny_1080p_stereo.avi'
+        self._update_background(background.VideoBackground(video), events)
 
     def show_intro(self):
         self._update_background(background.IntroBackground())

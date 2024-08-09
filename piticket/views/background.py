@@ -1,5 +1,6 @@
 import pygame 
 from piticket.fonts import get_pygame_font
+from piticket.videoplayer import VideoPygame
 
 def multiline_text_to_surfaces(text, color, rect, align='center'):
     """Return a list of text surfaces(pygame.Surface) and corresponding positions
@@ -76,8 +77,15 @@ class Background():
 
         self._rect = None
 
+        self._popup_box = None
+
+        self._need_update = None
+
     def __str__(self):
         return "{}-{}".format(self._name, self.__class__.__name__)
+
+    def handle_events(self, events=[]):
+        pass 
 
     def _write_texts(self, text, rect=None):
         """Create text surfaces to draw on window surface.
@@ -127,11 +135,22 @@ class Background():
         
 
 
-class VideoBackground():
-    def __init__(self):
-        Background.__init__(self, 'video')
+class VideoBackground(Background):
+    def __init__(self, path):
+        Background.__init__(self, path)
+        self.video = VideoPygame(self._name)
+        self.video.play()
+
+    def handle_events(self, events):
+        self.video._handle_events(events)
+
+    def resize(self, screen):
+        pass
+
+    def paint(self, screen):
+        self.video.preview(screen)
+
 
 class IntroBackground(Background):
     def __init__(self):
         Background.__init__(self, 'intro') 
-        

@@ -16,6 +16,18 @@ class PiApplication():
     
     def _initialize(self):
         pass 
+
+    def find_quit_event(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                return event 
+        return 
+
+    def find_change_event(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                return event 
+        return 
         
     def main_loop(self):
         try:
@@ -25,16 +37,23 @@ class PiApplication():
 
             start = True
 
+            # Change to True to show background
+            show_background = False
+
             while start:
                 # Get events list 
                 events = pygame.event.get()
 
-                for event in events:
-                    if event.type == pygame.QUIT:
-                        start = False
+                if self.find_quit_event(events):
+                    start = False
                         
-                # change color 
-                self.win.show_intro()
+                # change background
+                if self.find_change_event(events):
+                    show_background = True 
+                if show_background:
+                    self.win.show_intro()
+                else:
+                    self.win.show_video(events)
 
                 pygame.display.update()
                 clk.tick(fps) # Ensure the program will never run more than 40 frames per second
