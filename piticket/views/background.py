@@ -1,4 +1,5 @@
 import pygame 
+from piticket.fonts import get_pygame_font
 
 def multiline_text_to_surfaces(text, color, rect, align='center'):
     """Return a list of text surfaces(pygame.Surface) and corresponding positions
@@ -16,10 +17,8 @@ def multiline_text_to_surfaces(text, color, rect, align='center'):
     surfaces = []
     # split text into list of strings using newline character
     lines = text.splitlines()
-    # Return the longest  string
-    max_line = max(lines, key=len)
-    # Return a SysFont object
-    font = pygame.font.SysFont('nimbussansnarrow',rect.height//len(lines))
+    # Return a SysFont object corresponding to the longest string
+    font = get_pygame_font(max(lines, key=len),'nimbussansnarrow',rect.width,rect.height//len(lines))
 
     for i, line in enumerate(lines):
         surface = font.render(line, True, color)
@@ -94,8 +93,6 @@ class Background():
             self.font_size = rect.height
 
         self._texts.extend(multiline_text_to_surfaces(text, self._text_color,rect))
-        print(self._texts)
-    
 
     def set_color(self, color_or_path):
         """Set background color using RGB tuple or path to an image
