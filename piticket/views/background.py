@@ -42,7 +42,7 @@ def multiline_text_to_surfaces(text, color, rect, align='center'):
         else:
             raise ValueError("Invalid vertical argument '{}'".format(align))
    
-        surfaces.append((surface,(x,y)))
+        surfaces.append((surface,surface.get_rect(x=x,y=y)))
 
     return surfaces
 
