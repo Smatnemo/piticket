@@ -53,7 +53,7 @@ class PiApplication():
                 if show_background:
                     self.win.show_intro()
                 else:
-                    self.win.show_video(events)
+                    self.win.show_video()
 
                 pygame.display.update()
                 clk.tick(fps) # Ensure the program will never run more than 40 frames per second

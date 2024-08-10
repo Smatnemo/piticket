@@ -42,11 +42,11 @@ class PiWindow():
         self.current_background.resize(self.surface)
         self.current_background.paint(self.surface)
 
-    def show_video(self, events):
+    def show_video(self):
         """Show video as screen saver in sleep mode
         """
         video = '/home/pi/Videos/big_buck_bunny_1080p_stereo.avi'
-        self._update_background(background.VideoBackground(video), events)
+        self._update_background(background.VideoBackground(video))
 
     def show_intro(self):
         self._update_background(background.IntroBackground())

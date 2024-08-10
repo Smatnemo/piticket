@@ -141,9 +141,6 @@ class VideoBackground(Background):
         self.video = VideoPygame(self._name)
         self.video.play()
 
-    def handle_events(self, events):
-        self.video._handle_events(events)
-
     def resize(self, screen):
         pass
 
