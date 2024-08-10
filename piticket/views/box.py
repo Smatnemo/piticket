@@ -48,12 +48,13 @@ class Box:
         self.hovered = False
 
         if not osp.isfile(self.content):
-            self.text_surfaces = multiline_text_to_surfaces(self.content, 
+            self.content_surfaces = multiline_text_to_surfaces(self.content, 
                                                         self.content_color, 
                                                         self.rect.inflate(-self.padding, -self.padding), 
                                                         align='center')
         else:
-            self.text_surfaces = None
+            surface = pygame.image.load(self.content)
+            self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
 
     def handle_events(self, events):
         pass
@@ -62,8 +63,8 @@ class Box:
         pass
 
     def draw_text(self, screen):
-        for text_surface, pos in self.text_surfaces:
-            screen.blit(text_surface, pos)
+        for content_surface, pos in self.content_surfaces:
+            screen.blit(content_surface, pos)
 
     def draw_box(self, screen):
         # pass border_color attrite to rect color so the the border line looks like the desired
