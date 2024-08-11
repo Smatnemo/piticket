@@ -1,5 +1,6 @@
 import pygame 
 import os.path as osp 
+from piticket.pictures import get_pygame_image
 from piticket.views.background import multiline_text_to_surfaces
 
 class Box:
@@ -47,20 +48,34 @@ class Box:
         self.released = False 
         self.hovered = False
 
+        # Maximum padding value should not be greater that min(width, height)//2
+        if self.padding != 0 and self.padding in list(range(1,min(width, height)//2,1)):
+            rect = self.rect.inflate(-2*self.padding, -2*self.padding)
+        elif self.padding == 0:
+            rect = self.rect
+        else:
+            raise ValueError(f"Padding value {self.padding} is out of range. padding must be greater than or equal to 0 and less than {min(width, height)//2}")
+
         if not osp.isfile(self.content):
             self.content_surfaces = multiline_text_to_surfaces(self.content, 
                                                         self.content_color, 
-                                                        self.rect.inflate(-self.padding, -self.padding), 
+                                                        rect, 
                                                         align='center')
         else:
-            surface = pygame.image.load(self.content)
+            surface = get_pygame_image(self.content, size=(rect.width, rect.height))
             self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
 
     def handle_events(self, events):
-        pass
+        if self.interactable:
+            raise NotImplementedError
+        else:
+            pass
 
     def update(self):
         pass
+
+    def copy(self):
+        return self
 
     def draw_text(self, screen):
         for content_surface, pos in self.content_surfaces:
