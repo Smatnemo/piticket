@@ -6,11 +6,11 @@ pygame.init()
 win = pygame.display.set_mode((800,400), pygame.RESIZABLE)
 win.fill((255,0,0))
 
-content = '/home/pi/Dev/piticket/piticket/pictures/assets/camera.png'
+content = '/home/pi/Dev/piticket/piticket/pictures/assets/pibooth.png'
 # Create instance here after initializing pygame
 box = Box(x=10, y=10, 
         width=100, height=60, 
-        margin=20, padding=29, 
+        margin=20, padding=10, 
         border=3, border_radius=10, 
         border_color=(0,0,0), 
         content='Buttton', 

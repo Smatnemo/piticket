@@ -92,14 +92,6 @@ class Box:
     def draw(self, screen):
         self.draw_box(screen)
         self.draw_text(screen)
-        
-# Border_color is not applied
-# The color passed to the pygame.draw.rect() method is used to draw a border
-# if the border which is the thickness is removed or turned to 0, the box is filled 
-# Desired behaviour 
-# self.border attribute should be colorable - done
-# the color should fill the box - done
-# Content should be text or image text
 
 class PopUpBox(Box):
     def __init__(self):
