@@ -29,6 +29,13 @@ class Button(Box):
         self.hovered_color = hovered_color
         self.hovered_border_color = hovered_border_color
 
+        self._clicked_callback_func = None
+        self._clicked_callback_args = None
+        self._clicked_callback_kwargs = None
+        self._hovered_callback_func = None
+        self._hovered_callback_args = None 
+        self._hovered_callback_kwargs = None
+
     def _draw_clicked_box(self, screen):
         Box._draw_box(self, screen, self.clicked_color, self.clicked_border_color)
 
@@ -38,6 +45,16 @@ class Button(Box):
 
     def _draw_hovered_box(self, screen):
         Box._draw_box(self, screen, self.hovered_color, self.hovered_border_color)
+
+    def clicked(self, func, *args, **kwargs):
+        self._clicked_callback_func = func
+        self._clicked_callback_args = args 
+        self._clicked_callback_kwargs = kwargs
+
+    def hovered(self, func, *args, **kwargs):
+        self._hovered_callback_func = func 
+        self._hovered_callback_args = args 
+        self._hovered_callback_kwargs = kwargs
 
     def handle_events(self, event):
         if not event:
@@ -61,6 +78,16 @@ class Button(Box):
     def update(self, event, screen):
         self.handle_events(event)
         self.draw(screen)
+        if self._released and self._clicked_callback_func:
+            self._clicked_callback_func(*self._clicked_callback_args,
+                                        **self._clicked_callback_kwargs)
+        self._released = False
+
+        if self._hovered:
+            if self._hovered_callback_func:
+                self._hovered_callback_func(*self._hovered_callback_args,
+                                        **self._hovered_callback_kwargs)
+                
 
     def draw(self, screen):
         if self._clicked:

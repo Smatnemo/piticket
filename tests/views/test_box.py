@@ -2,6 +2,10 @@ import pygame
 from piticket.views.box import Box
 from piticket.views.button import Button
 
+# Auxiliary function
+def print_func(*args):
+    if args: 
+        print(args[0])
 # Initialize pygame and set display
 pygame.init()
 win = pygame.display.set_mode((800,400), pygame.RESIZABLE)
@@ -40,14 +44,18 @@ def test_clear(view_loop):
 
 # Test button
 button = Button()
-def test_button_draw(view_loop):
-    view_loop(button.draw, win)
+# Test callback function for clicked
+button.clicked(print_func, 'Clicked')
+# Test callback function for hovered
+button.hovered(print_func, 'Hovered')
 
 def test_button_handle_events(view_loop):
     view_loop(button.update, win)
 
 def test_clear_button(view_loop):
     view_loop(button.clear, win)
+
+
 
 
 

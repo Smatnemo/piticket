@@ -111,6 +111,21 @@ class Box:
         else:
             pass
 
+    def clicked(self, func, *args, **kwargs):
+        """Save a function to execute when the button is released
+        """
+        if self.interactable:
+            raise NotImplementedError 
+        else:
+            pass
+
+    def hovered(self, func, *args, **kwargs):
+        """"""
+        if self.interactable:
+            raise NotImplementedError 
+        else:
+            pass
+
     def handle_events(self, events):
         if self.interactable:
             raise NotImplementedError
