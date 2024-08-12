@@ -1,5 +1,6 @@
 import pygame
 from piticket.views.box import Box
+from piticket.views.button import Button
 
 # Initialize pygame and set display
 pygame.init()
@@ -33,5 +34,21 @@ def test_draw_text(view_loop):
 
 def test_draw(view_loop):
     view_loop(box.draw, win)
+
+def test_clear(view_loop):
+    view_loop(box.clear, win)
+
+# Test button
+button = Button()
+def test_button_draw(view_loop):
+    view_loop(button.draw, win)
+
+def test_button_handle_events(view_loop):
+    view_loop(button.update, win)
+
+def test_clear_button(view_loop):
+    view_loop(button.clear, win)
+
+
 
         

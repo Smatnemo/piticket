@@ -31,6 +31,8 @@ class Box:
         :type color: tuple or list
         :attr content_color: the color of the text if text is the content. No color if image is content
         :type content_color: tuple or list
+        :attr screen: the screen surface before a button is added
+        :type screen: pygame.Surface
         """
         self.rect = pygame.Rect((x,y,width,height))
         self.color = color
@@ -44,9 +46,9 @@ class Box:
         self.content_color = content_color
 
         self.interactable = interactable
-        self.clicked = False 
-        self.released = False 
-        self.hovered = False
+        self._clicked = False 
+        self._released = False 
+        self._hovered = False
 
         # Maximum padding value should not be greater that min(width, height)//2
         if self.padding != 0 and self.padding in list(range(1,min(width, height)//2,1)):
@@ -65,33 +67,71 @@ class Box:
             surface = get_pygame_image(self.content, size=(rect.width, rect.height))
             self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
 
+        self.screen_color = None 
+
+    def _draw_text(self, screen):
+        for content_surface, pos in self.content_surfaces:
+            screen.blit(content_surface, pos)
+
+    def _draw_box(self, screen, color=None, border_color=None):
+        """
+        :param screen: the pygame surface to draw on
+        :type screen: pygame.Surface
+        :param interaction: draw the box based on the interaction such as clicked, released, hovered
+        :type interation: str
+        """
+        if not color:
+            color = self.color 
+        if not border_color:
+            border_color = self.border_color 
+        
+        # Draw box with box self.color
+        pygame.draw.rect(screen, color, self.rect,
+                        border_radius=self.border_radius)
+        # Draw transparent box with only borders with color of self.border_color
+        pygame.draw.rect(screen, border_color, self.rect, width=self.border,
+                        border_radius=self.border_radius)
+        
+    
+    def _draw_clicked_box(self):
+        if self.interactable:
+            raise NotImplementedError
+        else:
+            pass
+    
+    def _draw_released_box(self):
+        if self.interactable:
+            raise NotImplementedError
+        else:
+            pass 
+    
+    def _draw_hovered_box(self):
+        if self.interactable:
+            raise NotImplementedError
+        else:
+            pass
+
     def handle_events(self, events):
         if self.interactable:
             raise NotImplementedError
         else:
             pass
 
-    def update(self):
+    def update(self, event, screen):
         pass
 
     def copy(self):
         return self
 
-    def draw_text(self, screen):
-        for content_surface, pos in self.content_surfaces:
-            screen.blit(content_surface, pos)
-
-    def draw_box(self, screen):
-        # pass border_color attrite to rect color so the the border line looks like the desired
-        # color
-        pygame.draw.rect(screen, self.color, self.rect,
-                        border_radius=self.border_radius)
-        pygame.draw.rect(screen, self.border_color, self.rect, width=self.border,
-                        border_radius=self.border_radius)
-
     def draw(self, screen):
-        self.draw_box(screen)
-        self.draw_text(screen)
+        # Create a copy of the screen before drawing on the screen
+        self.screen_color = screen.get_at((self.rect.x,self.rect.y))
+        # Draw on the screen after preserving a copy
+        self._draw_box(screen)
+        self._draw_text(screen)
+
+    def clear(self, screen):
+        screen.fill(self.screen_color,rect=self.rect)
 
 class PopUpBox(Box):
     def __init__(self):

@@ -2,7 +2,7 @@ import pygame
 import os.path as osp
 from PIL import Image
 
-from piticket.pictures.sizing import new_size_keep_aspect_ratio
+from piticket.pictures.sizing import new_size_keep_aspect_ratio, new_size_by_croping_ratio
 
 def get_filename(name):
     """Return absolute path to a picture located in the current package.
@@ -48,9 +48,9 @@ def get_pygame_image(name, size=None, antialiasing=True, hflip=False, vflip=Fals
             pil_image = Image.open(path)
         else:
             pil_image = Image.new('RGBA', size, (0,0,0,0))
-        if size is not None:
+        if size:
             if crop:
-                pil_image = pil_image.crop(size)
+                pil_image = pil_image.crop(new_size_by_croping_ratio(pil_image.size,size))
             pil_image = pil_image.resize(new_size_keep_aspect_ratio(pil_image.size, size), Image.LANCZOS if antialiasing else Image.NEAREST)
 
         image = pygame.image.frombuffer(pil_image.tobytes(), pil_image.size, pil_image.mode)
