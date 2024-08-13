@@ -21,7 +21,7 @@ box = Box(x=10, y=10,
         content='Box', 
         content_color=(0,0,0), 
         color=(255, 255, 255), 
-        parent=None,
+        parent=win,
         interactable=True)
 # Create box instance with image
 image_box = Box(x=10, y=10, 
@@ -33,7 +33,7 @@ image_box = Box(x=10, y=10,
         content=content, 
         content_color=(0,0,0), 
         color=(255, 255, 255),
-        parent=None, 
+        parent=win, 
         interactable=True)
 
 def test_draw_text(view_loop):
@@ -61,6 +61,10 @@ def test_clear_button(view_loop):
 
 # Test PopUpBox
 popupbox = PopUpBox(parent=win)
+# Create call back functions for buttons
+popupbox.btn1.clicked(print_func, 'Clicked Button 1')
+popupbox.btn2.clicked(print_func, 'Clicked Button 2')
+
 def test_popupbox_update(view_loop):
     view_loop(popupbox.update, win)
         

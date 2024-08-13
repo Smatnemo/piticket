@@ -16,15 +16,15 @@ class Box:
     POSITIONS = [TOPLEFT, TOPCENTER, TOPRIGHT, CENTERLEFT, CENTER, 
                 CENTERRIGHT, BOTTOMLEFT, BOTTOMCENTER, BOTTOMRIGHT, None]
 
-    def __init__(self, x:int, y:int, 
+    def __init__(self, parent:object,
+                x:int, y:int, 
                 width:int, height:int,
                 position:str, 
                 margin:int, padding:int,                 
                 border:int, border_radius:int,
                 border_color:tuple,
                 content:str, content_color:tuple,
-                color:tuple,  interactable:bool,
-                parent:object=None):
+                color:tuple,  interactable:bool):
         """Generic base box class for all box elements to be implemented
         in the app.
         :attr rect: a rectangle of dimensions x, y, width and height
@@ -50,10 +50,18 @@ class Box:
         :type content_color: tuple or list
         :attr screen: the screen surface before a button is added
         :type screen: pygame.Surface
-        :attr parent: parent must implement a get_rect method to recturn
+        :attr parent: parent must implement a get_rect method to recturn a pygame.Rect object
+                    parent must be set at initialization
         :type parent: object
         """
-        self.rect = pygame.Rect((x,y,width,height))
+        self.parent = parent
+        # Pass a tuple and create a pygame Rect: check setter
+        self.rect = (x,y,width,height)
+        # Set these after creating pygame Rect
+        self.x = x 
+        self.y = y 
+        self.width = width 
+        self.height = height 
         # Call the position property method to validate and set value
         self.position = position
         self.color = color
@@ -65,8 +73,7 @@ class Box:
         
         self.content = content
         self.content_color = content_color
-        
-        self.parent = parent
+        self.content_surfaces = None
 
         self.interactable = interactable
         self._clicked = False 
@@ -78,41 +85,62 @@ class Box:
 
         # if box has parent and position set, change the position of the box based on value of position
         self.position_box()
-        # Maximum padding value should not be greater that min(width, height)//2
-        if self.padding != 0 and self.padding in list(range(1,min(width, height)//2,1)):
-            rect = self.rect.inflate(-2*self.padding, -2*self.padding)
-        elif self.padding == 0:
-            rect = self.rect
-        else:
-            raise ValueError(f"Padding value {self.padding} is out of range. padding must be greater than or equal to 0 and less than {min(width, height)//2}")
-
-        if not osp.isfile(self.content):
-            self.content_surfaces = multiline_text_to_surfaces(self.content, 
-                                                        self.content_color, 
-                                                        rect, 
-                                                        align='center')
-        else:
-            surface = get_pygame_image(self.content, size=(rect.width, rect.height))
-            self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
-
-    @property
-    def position(self):
-        return self._position
-
-    @position.setter
-    def position(self, pos):
-        if pos not in self.POSITIONS:
-            raise ValueError(f'Choose valid value from POSITIONS - {self.POSITIONS}')
-        self._position = pos 
-
+    
     @property
     def parent(self):
         return self._parent
 
     @parent.setter
     def parent(self,parent):
-        if not parent or hasattr(parent,'get_rect'):
-            self._parent = parent
+        if not parent and not hasattr(parent, 'get_rect'):
+            raise Exception(f'{parent} is not a valid parent. Please provide valid pygame.Surface or Box object as parent')
+        # parent must have the attribute of get_rect, this object or a pygame.Surface object
+        self._parent = parent
+
+    @property 
+    def rect(self):
+        return self._rect 
+    
+    @rect.setter 
+    def rect(self, rect):
+        """ Validate and set rectangle
+        :param rect: rectangle coordinates 
+        :type rect: tuple
+        """
+        if not isinstance(rect,(tuple,list)):
+            raise ValueError(f'{rect} must be tuple or list.')
+        assert len(rect) == 4, 'Length of tuple must be 4'
+        # Get parent rect
+        parent_rect = self.parent.get_rect()
+        x = parent_rect.x 
+        y = parent_rect.y
+        assert parent_rect.collidepoint((rect[0]+x,rect[1]+y)), 'Coordinates must be within parent'
+        self._rect = pygame.Rect(rect)
+
+    @property
+    def position(self):
+        """Return position value: getter"""
+        return self._position
+
+    @position.setter
+    def position(self, pos):
+        """Set position value: setter"""
+        if pos not in self.POSITIONS:
+            raise ValueError(f'Choose valid value from POSITIONS - {self.POSITIONS}')
+        self._position = pos 
+
+
+    @property 
+    def padding(self):
+        """Get the value of padding"""
+        return self._padding
+
+    @padding.setter
+    def padding(self, padding):
+        """Set the value of padding"""
+        if padding not in [None,*range(0,min(self.rect.width,self.rect.height)//2,1)]:
+            raise ValueError(f'{padding} is not a valid value for padding')
+        self._padding = padding
 
     def get_rect(self):
         return self.rect 
@@ -122,7 +150,66 @@ class Box:
             assert len(pixel_coord) == 2, "Pixel coordinates should be 2"
             return self.color
 
+    def change_xy(self, coord):
+        """Change the position of the box using x, y coordinates and 
+        change the coordinates of the content as well
+        """
+        assert len(coord) == 2, "Coord must be 2"
+        # Check that content is within the box
+        assert self.rect.collidepoint(coord), "Coord must be within the "
+
+    def position_box(self):
+        """Position current Box within parent Box using the position attribute"""
+        if self.parent:
+            if self.position:
+                width = self.rect.width
+                if self.position.endswith('left'):
+                    self.rect.x = self.parent.get_rect().left
+                elif self.position.endswith('center'):
+                    self.rect.x = self.parent.get_rect().centerx - width//2
+                elif self.position.endswith('right'):
+                    self.rect.x = self.parent.get_rect().right - width
+                    
+                height = self.rect.height
+                if self.position.startswith('top'):
+                    self.rect.y = self.parent.get_rect().top
+                elif self.position.startswith('center'):
+                    self.rect.y = self.parent.get_rect().centery - height//2
+                elif self.position.startswith('bottom'):
+                    self.rect.y = self.parent.get_rect().bottom - height
+
+            elif not self.position:
+                # if only parent exists, tranlate x and y positions to fit the positions of the parent
+                self.rect.x = self.parent.get_rect().x + self.rect.x
+                self.rect.y = self.parent.get_rect().y + self.rect.y
+
+        self.position_text()
+
+    def position_text(self, align='center'):
+        """Position text within Box. Possible align values are in self.POSITIONS
+            and class attributes.
+        
+        :param align: position box within the rect
+        :type align: str
+        """
+        # Maximum padding value should not be greater that min(width, height)//2 as ensured in the padding setter
+        if self.padding:
+            rect = self.rect.inflate(-2*self.padding, -2*self.padding)
+        elif not self.padding:
+            rect = self.rect
+        else:
+            return
+        if not osp.isfile(self.content):
+            self.content_surfaces = multiline_text_to_surfaces(self.content, 
+                                                        self.content_color, 
+                                                        rect, 
+                                                        align=align)
+        else:
+            surface = get_pygame_image(self.content, size=(rect.width, rect.height))
+            self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
+
     def _draw_text(self, screen):
+        # By default, content surface must always be in the center of the box
         for content_surface, pos in self.content_surfaces:
             screen.blit(content_surface, pos)
 
@@ -190,31 +277,6 @@ class Box:
     def copy(self):
         return self
 
-    def position_box(self):
-        """Position current item within parent item using"""
-        if self.parent:
-            if self.position:
-                width = self.rect.width
-                if self.position.endswith('left'):
-                    self.rect.x = self.parent.get_rect().left
-                elif self.position.endswith('center'):
-                    self.rect.x = self.parent.get_rect().centerx - width//2
-                elif self.position.endswith('right'):
-                    self.rect.x = self.parent.get_rect().right - width
-                    
-                height = self.rect.height
-                if self.position.startswith('top'):
-                    self.rect.y = self.parent.get_rect().top
-                elif self.position.startswith('center'):
-                    self.rect.y = self.parent.get_rect().centery - height//2
-                elif self.position.startswith('bottom'):
-                    self.rect.y = self.parent.get_rect().bottom - height
-
-            elif not self.position:
-                # if only parent exists, tranlate x and y positions to fit the positions of the parent
-                self.rect.x = self.parent.get_rect().x + self.rect.x
-                self.rect.y = self.parent.get_rect().y + self.rect.y
-
     def draw(self, screen):
         # Get the color of the screen or parent
         if self.parent:
@@ -245,7 +307,8 @@ class Button(Box):
                 parent=None):
         # Button must be interactable
         interactable=True
-        Box.__init__(self, x, y,
+        Box.__init__(self, parent,
+                    x, y,
                     width, height, 
                     position,
                     margin, padding,
@@ -254,8 +317,8 @@ class Button(Box):
                     content, 
                     content_color,
                     color,
-                    interactable,
-                    parent)
+                    interactable)
+
         self.clicked_color = clicked_color 
         self.clicked_border_color = clicked_border_color 
         self.hovered_color = hovered_color
@@ -318,8 +381,7 @@ class Button(Box):
         if self._hovered:
             if self._hovered_callback_func:
                 self._hovered_callback_func(*self._hovered_callback_args,
-                                        **self._hovered_callback_kwargs)
-                
+                                        **self._hovered_callback_kwargs)           
 
     def draw(self, screen):
         if self._clicked:
@@ -331,42 +393,54 @@ class Button(Box):
         else:
             Box.draw(self, screen)
 
-        # pygame.display.update()
-        # Allow time for effect to be seen
-        # pygame.time.wait(100)
-
-
     
 class PopUpBox(Box):
-    def __init__(self, x=0, y=0,
+    def __init__(self, parent=None,
+                x=0, y=0,
                 width=300, height=200,
                 position='center',
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
-                content='PopUpBox',
+                content='Would you like to continue?',
                 content_color=(255,255,255),
                 color=(133,133,133),
-                interactable=False,
-                parent=None):
-        Box.__init__(self, x, y,
+                interactable=False):
+        Box.__init__(self, 
+                parent, x, y,
                 width, height,
                 position,
                 margin, padding,
                 border, border_radius,
                 border_color, content,
                 content_color, color,
-                interactable, parent)
+                interactable)
+        # Initialize and position buttons
+        self.btn1 = Button(content='Yes',parent=self)
+        self.btn2 = Button(content='No',parent=self)
+        self.position_buttons()
+    
+    def position_text(self, align='top-center'):
+        Box.position_text(self, align)
 
-        # self.btn3 = Button(content='One',position=self.BOTTOMLEFT,parent=self)
-        self.btn1 = Button(content='No',position=self.BOTTOMRIGHT,parent=self)
-        self.btn2 = Button(content='Yes',position=self.TOPRIGHT,parent=self)
+    def position_buttons(self):
+        # Calculate the center coordinates
+        x,y = self.rect.center
+        if hasattr(self,'btn1'):
+            self.btn1.rect.x = x - self.btn1.rect.width - self.btn1.margin 
+            self.btn1.rect.y = y
+            # Reposition text
+            self.btn1.position_text()
+        if hasattr(self,'btn2'):
+            self.btn2.rect.x = self.btn2.margin + x
+            self.btn2.rect.y = y
+            # Reposition text
+            self.btn2.position_text()
 
     def update(self, event, screen):
         self.draw(screen)
-        self.btn2.update(event, screen)
         self.btn1.update(event, screen)
-        # self.btn3.update(event, screen)
+        self.btn2.update(event, screen)
 
 class PopUpBoxProcessing(Box):
     def __init__(self):
