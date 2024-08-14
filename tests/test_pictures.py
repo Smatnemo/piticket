@@ -1,6 +1,7 @@
 import os.path as osp
 from PIL import Image
-from piticket.pictures import get_filename, get_pygame_image
+from piticket.utils import rename_gifs
+from piticket.pictures import get_filename, get_gifs, get_pygame_image
 from piticket.pictures.sizing import (new_size_keep_aspect_ratio, 
                                     new_size_by_croping_ratio, new_size_by_croping)
 
@@ -10,6 +11,11 @@ image = Image.open(full_name)
 
 def test_get_filename():
     assert full_name == get_filename(name)
+
+def test_get_gifs():
+    gif_images = get_gifs('Spinner_transparent')
+    rename_gifs(gif_images)
+    assert isinstance(gif_images,list)
 
 def test_new_size_keep_aspect_ratio():
     new_size_keep_aspect_ratio(image.size, (100, 100))

@@ -6,7 +6,7 @@ def view_loop():
     def loop(func, *args, **kwargs): 
         print(f'Exectuting {func.__name__}')  
         clk = pygame.time.Clock()
-        fps = 40
+        fps = 24
         start = True
         while start:
             events = pygame.event.get()

@@ -1,5 +1,5 @@
 import pygame
-from piticket.views.box import Box, Button, PopUpBox
+from piticket.views.box import Box, Button, PopUpBox, PopUpBoxProcessing
 
 # Auxiliary function
 def print_func(*args):
@@ -67,4 +67,15 @@ popupbox.btn2.clicked(print_func, 'Clicked Button 2')
 
 def test_popupbox_update(view_loop):
     view_loop(popupbox.update, win)
+
+def test_popupbox_clear(view_loop):
+    view_loop(popupbox.clear, win)
+
+popupprocess = PopUpBoxProcessing(pygame.event.Event(pygame.MOUSEBUTTONUP,{'btn':1}),parent=win,gif_image='Spinner_transparent')
+popupprocess.triggered(print_func, 'Clicked Button pop up')
+def test_popupboxprocessing_update(view_loop):
+    view_loop(popupprocess.update, win)
+
+def test_popupboxprocessing_clear(view_loop):
+    view_loop(popupprocess.clear, win)
         
