@@ -28,13 +28,13 @@ def multiline_text_to_surfaces(text, color, rect, align='center'):
         elif align.endswith('center'):
             x = rect.centerx - surface.get_rect().width//2
         elif align.endswith('right'):
-            x = rect.right
+            x = rect.right - surface.get_rect().width
         else:
             raise ValueError("Invalid horizontal argument '{}'".format(align))
 
         height = surface.get_rect().height
         if align.startswith('top'):
-            y = rect.top
+            y = rect.top + i*height
         elif align.startswith('center'):
             y = rect.centery - (len(lines)*height)//2 + height*i
         elif align.startswith('bottom'):

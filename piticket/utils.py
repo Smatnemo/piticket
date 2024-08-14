@@ -110,3 +110,15 @@ def get_crash_message():
         msg += " * " + ("and post the file: {}".format(get_logging_filename()))
     msg += " " + "*" * 83
     return msg
+
+def rename_gifs(fullpath_frames):
+    """Rename all the gifs in a subdirectory
+    """
+    for frame in fullpath_frames:
+        head, tail = osp.split(frame)
+        name, ext = tail.split('.')
+        if len(name) == 1:
+            # test to know if it is a single digit
+            os.rename(frame,osp.join(head,f'frame_0{name}.png'))
+        if len(name) == 2:
+            os.rename(frame,osp.join(head,f'frame_{name}.png'))

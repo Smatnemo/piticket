@@ -1,6 +1,9 @@
 import pygame 
+import time
+import itertools
 import os.path as osp
-from piticket.pictures import get_pygame_image
+from PIL import Image
+from piticket.pictures import get_pygame_image, get_gifs
 from piticket.views.background import multiline_text_to_surfaces
 
 class Box:
@@ -73,7 +76,7 @@ class Box:
         
         self.content = content
         self.content_color = content_color
-        self.content_surfaces = None
+        self.content_surfaces = []
 
         self.interactable = interactable
         self._clicked = False 
@@ -205,7 +208,7 @@ class Box:
                                                         rect, 
                                                         align=align)
         else:
-            surface = get_pygame_image(self.content, size=(rect.width, rect.height))
+            surface = get_pygame_image(self.content, size=(rect.width, rect.height), color=None)
             self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
 
     def _draw_text(self, screen):
@@ -402,7 +405,7 @@ class PopUpBox(Box):
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
-                content='Would you like to continue?',
+                content='Would you like to \n continue?',
                 content_color=(255,255,255),
                 color=(133,133,133),
                 interactable=False):
@@ -439,11 +442,121 @@ class PopUpBox(Box):
 
     def update(self, event, screen):
         self.draw(screen)
+        # Draw and handle events of buttons
+        # after drawing pop up box on screen
         self.btn1.update(event, screen)
         self.btn2.update(event, screen)
 
 class PopUpBoxProcessing(Box):
-    def __init__(self):
-        pass
+    def __init__(self, event,
+                parent=None, x=0, y=0,
+                width=300, height=200,
+                position='center',
+                margin=20, padding=10,
+                border=1, border_radius=3,
+                border_color=(0,0,0),
+                content='Processing',
+                content_color=(255,255,255),
+                color=(133,133,133),
+                interactable=False,
+                gif_image=None):
+        """:param gif_name: the name of the folder with gif frames.
+           :type gif_name: str
+           :param event: specific event to respond to
+           :type event: pygame.event.Event
+        """
+        self.event = event 
+        self.gif_image = gif_image
+
+        Box.__init__(self, 
+                parent, x, y,
+                width, height,
+                position,
+                margin, padding,
+                border, border_radius,
+                border_color, content,
+                content_color, color,
+                interactable)
+        # Marks the beginning
+        self._started = True 
+        # Marks the end of the processing circle
+        self._triggered = False
+        self._triggered_callback_func = None
+        self._triggered_callback_args = None 
+        self._triggered_callback_kwargs = None
+
+    @property 
+    def gif_image(self):
+        return self._gif_image 
+
+    @gif_image.setter
+    def gif_image(self, gif_folder_name):
+        """Use folder name to return a generator of gif frame names
+        """
+        self._gif_image = itertools.cycle(get_gifs(gif_folder_name)) 
+
+    def triggered(self, func, *args, **kwargs):
+        self._triggered_callback_func = func 
+        self._triggered_callback_args = args 
+        self._triggered_callback_kwargs = kwargs
+
+    def handle_events(self,event):
+        if not event:
+            return
+        # if event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
+        #     self._released = True 
+        if event.type == self.event.type:
+            self._triggered = True
+            self._started = False
+
+    def position_text(self,align='top-center'):
+        Box.position_text(self,align=align)
+
+    def position_gif(self, image_surface, position='bottom-center'):
+        """
+        """
+        x, y = self.rect.x,self.rect.y
+        if position:
+            width = image_surface.get_rect().width
+            if position.endswith('left'):
+                x = self.rect.left
+            elif position.endswith('center'):
+                x = self.rect.centerx - width//2
+            elif position.endswith('right'):
+                x = self.rect.right - width
+            else:
+                raise ValueError(f'Invalid argument {position}. Choose from {self.POSITIONS}')
+            
+            height = image_surface.get_rect().height
+            if position.startswith('top'):
+                y = self.rect.top 
+            elif position.startswith('center'):
+                y = self.rect.centery - height//2
+            elif position.startswith('bottom'):
+                y = self.rect.bottom - height
+            else:
+                raise ValueError(f'Invalid argument {position}. Choose from {self.POSITIONS}')
+        return x, y
+
+    def draw(self, screen):
+        Box.draw(self,screen)
+        img = next(self.gif_image) 
+        im = get_pygame_image(img,color=None,size=(150,19950))
+        screen.blit(im,self.position_gif(im))
+        
+    def update(self, event, screen):
+        self.handle_events(event)
+        if self._started:
+            # Draw pop up box on screen
+            self.draw(screen)
+        if self._triggered:
+            self.clear(screen)
+            # Execute any callback functions if any
+            if self._triggered_callback_func:
+                self._triggered_callback_func(*self._triggered_callback_args,
+                                            **self._triggered_callback_kwargs)
+            self._triggered = False
+        
+        
 
 
