@@ -20,6 +20,13 @@ class PiApplication():
         self.states_machine = StatesMachine(self._pm,self,self.win)
         self.states_machine.add_state('sleep')
         self.states_machine.add_state('wait')
+        self.states_machine.add_state('choose')
+        self.states_machine.add_state('chosen')
+        self.states_machine.add_state('pay')
+        self.states_machine.add_state('collect')
+        self.states_machine.add_state('recharge')
+        self.states_machine.add_state('print')
+        self.states_machine.add_state('finish')
 
     def _initialize(self):
         pass 
