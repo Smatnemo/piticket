@@ -4,16 +4,23 @@ import sys
 
 import os.path as osp
 
-PACKAGE_DIR = osp.abspath(osp.dirname(osp.dirname(__file__)))
+PROJECT_DIR = osp.abspath(osp.dirname(__file__))
+PACKAGE_DIR, project_name = osp.split(PROJECT_DIR)
 sys.path.insert(0, PACKAGE_DIR)
 
-from utils import *
-from views import PiWindow
+from piticket.utils import *
+from piticket.views import PiWindow
+from piticket.states import StatesMachine
+from piticket.plugins import create_plugin_manager
 
 class PiApplication():
-    def __init__(self):
-        self.win = PiWindow('Ticket App')
-    
+    def __init__(self, plugin_manager):
+        self.win = PiWindow('Piticket')
+        self._pm = plugin_manager
+        self.states_machine = StatesMachine(self._pm,self,self.win)
+        self.states_machine.add_state('sleep')
+        self.states_machine.add_state('wait')
+
     def _initialize(self):
         pass 
 
@@ -34,6 +41,7 @@ class PiApplication():
             clk = pygame.time.Clock()
             fps = 40
             self._initialize()
+            self.states_machine.set_state('sleep')
 
             start = True
 
@@ -47,19 +55,14 @@ class PiApplication():
                 if self.find_quit_event(events):
                     start = False
                         
-                # change background
-                if self.find_change_event(events):
-                    show_background = True 
-                if show_background:
-                    self.win.show_intro()
-                else:
-                    self.win.show_video()
+                # Move between states
+                self.states_machine.process(events)
 
                 pygame.display.update()
                 clk.tick(fps) # Ensure the program will never run more than 40 frames per second
             
         except Exception as ex:
-            LOGGER.error(str(ex))
+            LOGGER.error(str(ex), exc_info=True)
             LOGGER.error(get_crash_message())
         finally:
             pygame.quit()
@@ -72,7 +75,11 @@ def main():
         # Avoid use 'fork': safely forking a multithreaded process is problematic
         multiprocessing.set_start_method('spawn')
     configure_logging(msgfmt='[ %(levelname)-8s] %(name)-18s: %(message)s', filename='/tmp/piticket/piticket.log')
-    app = PiApplication()
+
+    pm = create_plugin_manager(project_name)
+    pm.load_all_plugins(paths=[],disabled=[])
+    
+    app = PiApplication(pm)
     app.main_loop()
 
     
