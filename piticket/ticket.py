@@ -18,7 +18,6 @@ class PiApplication():
         self.win = PiWindow('Piticket')
         self._pm = plugin_manager
         self.states_machine = StatesMachine(self._pm,self,self.win)
-        self.states_machine.add_state('sleep')
         self.states_machine.add_state('wait')
         self.states_machine.add_state('choose')
         self.states_machine.add_state('chosen')
@@ -48,7 +47,7 @@ class PiApplication():
             clk = pygame.time.Clock()
             fps = 40
             self._initialize()
-            self.states_machine.set_state('sleep')
+            self.states_machine.set_state('wait')
 
             start = True
 
