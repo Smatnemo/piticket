@@ -35,37 +35,37 @@ def state_choose_validate(app,win,events):
 def state_choose_exit(app,win):
     """"""
 
-# @hookspec 
-# def state_chosen_enter(app,win):
-#     """"""
+@hookspec 
+def state_chosen_enter(app,win):
+    """"""
 
-# @hookspec 
-# def state_chosen_do(app,win,events):
-#     """"""
+@hookspec 
+def state_chosen_do(app,win,events):
+    """"""
 
-# @hookspec(firstresult=True) 
-# def state_chosen_validate(app,win,events):
-#     """"""
+@hookspec(firstresult=True) 
+def state_chosen_validate(app,win,events):
+    """"""
 
-# @hookspec 
-# def state_chosen_exit(app,win):
-#     """"""
+@hookspec 
+def state_chosen_exit(app,win):
+    """"""
 
-# @hookspec 
-# def state_pay_enter(app,win):
-#     """"""
+@hookspec 
+def state_pay_enter(app,win):
+    """"""
 
-# @hookspec 
-# def state_pay_do(app,win,events):
-#     """"""
+@hookspec 
+def state_pay_do(app,win,events):
+    """"""
 
-# @hookspec(firstresult=True) 
-# def state_pay_validate(app,win,events):
-#     """"""
+@hookspec(firstresult=True) 
+def state_pay_validate(app,win,events):
+    """"""
 
-# @hookspec 
-# def state_pay_exit(app,win):
-#     """"""
+@hookspec 
+def state_pay_exit(app,win):
+    """"""
 
 # @hookspec 
 # def state_collect_enter(app,win):

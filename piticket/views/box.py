@@ -84,9 +84,6 @@ class Box:
         self._released = False 
         self._hovered = False
 
-        # save screen color
-        self.screen_color = None 
-
         # if box has parent and position set, change the position of the box based on value of position
         self.position_box()
     
@@ -177,11 +174,6 @@ class Box:
                 self.rect.y = parent_rect.centery - height//2
             elif self.position.startswith('bottom'):
                 self.rect.y = parent_rect.bottom - height
-            
-            if self.__class__.__name__ == 'PopUpBox':
-                print(parent_rect.bottom)
-                print(self.rect)
-                # exit()dfs
 
         elif not self.position:
             # if only parent exists, tranlate x and y positions to fit the positions of the parent
@@ -242,16 +234,14 @@ class Box:
             color = self.color 
         if not border_color:
             border_color = self.border_color 
-        # # Draw external box with margin
-        # rect_with_margin = self.rect.inflate(2*self.margin,2*self.margin)
-        # pygame.draw.rect(screen, self.screen_color, rect_with_margin,)
+
         # Draw box with box self.color
         pygame.draw.rect(screen, color, self.rect,
                         border_radius=self.border_radius)
         # Draw transparent box with only borders with color of self.border_color
         pygame.draw.rect(screen, border_color, self.rect, width=self.border,
                         border_radius=self.border_radius)
-        
+
     def _draw_clicked_box(self):
         if self.interactable:
             raise NotImplementedError
@@ -298,20 +288,9 @@ class Box:
         return self
 
     def draw(self, screen):
-        # Get the color of the screen or parent
-        if self.parent:
-            self.screen_color = self.parent.get_at((self.parent.get_rect().x,self.get_rect().y))
-        else:
-            self.screen_color = screen.get_at((self.rect.x,self.rect.y))
         # Draw on the screen after preserving a copy
         self._draw_box(screen)
         self._draw_text(screen)
-
-    def clear(self, screen):
-        if self.screen_color:
-            screen.fill(self.screen_color,rect=self.rect)
-        else:
-            screen.fill((0,0,0))
 
 class Button(Box):
     def __init__(self, x=0, y=0,
@@ -421,7 +400,7 @@ class PopUpBox(Box):
     def __init__(self, parent=None,
                 x=0, y=0,
                 width=300, height=200,
-                position='bottom-center',
+                position='center',
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
@@ -433,7 +412,7 @@ class PopUpBox(Box):
         """:param timeout: how long the pop up box should remain on the screen
            :type timeout: int"""
         # Marks the beginning
-        self._started = True 
+        self.started = True 
         # For timeout
         self._start_time = time.time()
         self._end_time = timeout + self._start_time
@@ -463,6 +442,14 @@ class PopUpBox(Box):
         self.btn2 = Button(content='No',parent=self)
         self.position_buttons()
     
+    @property
+    def started(self):
+        return self._started
+
+    @started.setter
+    def started(self, started):
+        self._started = started
+
     def handle_events(self,event):
         if not event:
             return 
@@ -476,7 +463,7 @@ class PopUpBox(Box):
         # Keep creating text surfaces for timer
         self._timeout_text = f'App will lock in {int(self._end_time-self._start_time)} seconds.\n'
         if self._end_time - self._start_time < 0:
-            self._started = False
+            self.started = False
             self._triggered = True
         self.content = self._timeout_text + self._content
         Box.position_text(self, align)
@@ -500,7 +487,7 @@ class PopUpBox(Box):
     def update(self, event, screen):
         # Recreate and reposition text surfaces
         self.position_text()
-        if self._started:
+        if self.started:
             self.draw(screen)
             # Draw and handle events of buttons
             # after drawing pop up box on screen
@@ -510,7 +497,6 @@ class PopUpBox(Box):
             if self._triggered_callback_func:
                 self._triggered_callback_func(*self._triggered_callback_args,
                                             **self._triggered_callback_kwargs)
-            self.clear(screen)
 
 
 class PopUpBoxProcessing(Box):
@@ -544,7 +530,7 @@ class PopUpBoxProcessing(Box):
                 content_color, color,
                 interactable)
         # Marks the beginning
-        self._started = True 
+        self.started = True 
         # Marks the end of the processing circle
         self._triggered = False
         self._triggered_callback_func = None
@@ -561,6 +547,14 @@ class PopUpBoxProcessing(Box):
         """
         self._gif_image = itertools.cycle(get_gifs(gif_folder_name)) 
 
+    @property
+    def started(self):
+        return self._started
+
+    @started.setter
+    def started(self, started):
+        self._started = started
+
     def triggered(self, func, *args, **kwargs):
         self._triggered_callback_func = func 
         self._triggered_callback_args = args 
@@ -573,7 +567,7 @@ class PopUpBoxProcessing(Box):
         #     self._released = True 
         if event.type == self.event.type:
             self._triggered = True
-            self._started = False
+            self.started = False
 
     def position_text(self,align='top-center'):
         Box.position_text(self,align=align)
@@ -607,12 +601,12 @@ class PopUpBoxProcessing(Box):
     def draw(self, screen):
         Box.draw(self,screen)
         img = next(self.gif_image) 
-        im = get_pygame_image(img,color=None,size=(150,19950))
+        im = get_pygame_image(img,color=None,size=(150,150))
         screen.blit(im,self.position_gif(im))
         
     def update(self, event, screen):
         self.handle_events(event)
-        if self._started:
+        if self.started:
             # Draw pop up box on screen
             self.draw(screen)
         if self._triggered:

@@ -1,5 +1,6 @@
 import os
 import sys 
+import time
 import logging
 import platform
 
@@ -9,6 +10,81 @@ from piticket.fonts import get_pygame_font
 
 LOGGER = logging.getLogger('piticket')
 
+class PoolingTimer():
+    """Time to be checked in a pooling loop to check if time has been exceeded
+    """
+    def __init__(self, timeout, start=True):
+        self.timeout = timeout 
+        self.time = None 
+        self._paused_total = 0
+        self._paused_time = None 
+        if start:
+            self.start()
+    
+    def __enter__(self):
+        """Start timer if used as context manager."""
+        self.start()
+        return self 
+    
+    def __exit__(self, *args):
+        """Stop timer if used as context manager"""
+        self.time = None 
+
+    def reset(self):
+        """Restart timer to its initial state"""
+        self.time = None 
+        self._paused_total = 0
+        self._paused_time = None 
+
+    def start(self):
+        """Start the timer"""
+        if self.timeout < 0:
+            raise ValueError("PoolingTimer cannot be started if timeout is less than 0")
+        if self._paused_time:
+            self._paused_total += time.time() - self._paused_time 
+            self._paused_time = None 
+        else:
+            self._paused_total = 0 
+            self.time = time.time()
+    
+    def freeze(self):
+        """Pause the timer.
+        """
+        if not self._paused_time:
+            self._paused_time = time.time()
+        
+    def remaining(self):
+        """Return the remaining seconds
+        """
+        if self.time is None:
+            remain = float(self.timeout)
+        else:
+            remain = self.timeout + self.paused() - (time.time() - self.time)
+            if remain < 0.0:
+                remain = 0.0 
+        return remain 
+
+    def paused(self):
+        """Return the pause duration in seconds.
+        """
+        if self._paused_time:
+            return self._paused_total + time.time() - self._paused_time 
+        return self._paused_total
+
+    def elapsed(self):
+        """Return the elapsed
+        """
+        if self.time is None:
+            return 0.0
+        return time.time() - self.time - self.paused()
+
+    def is_timeout(self):
+        """Return True if the timer is in timeout.
+        """
+        elapsed = self.elapsed()
+        if elapsed == 0.0:
+            raise RuntimeError("PoolingTimer has never been started")
+        return elapsed > self.timeout
 
 class BlockConsoleHandler(logging.StreamHandler):
 

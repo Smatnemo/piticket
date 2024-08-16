@@ -46,7 +46,7 @@ class StatesMachine():
                 new_state_name = self.failsafe_state
             else:
                 raise
-
+        
         if new_state_name is not None:
             self.set_state(new_state_name)
 

@@ -1,7 +1,7 @@
 import pygame 
 from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
-from piticket.views.box import Header, Footer, PopUpBox, PopUpBoxProcessing, RightSideBar, LeftSideBar
+from piticket.views.box import Header, Footer, RightSideBar, LeftSideBar
 
 
 class Background():
@@ -37,19 +37,22 @@ class Background():
 
         self._rect = None
 
-        self._header = Header(parent=surface)
-        self._footer = Footer(parent=surface)
-        self._left_sidebar = LeftSideBar(parent=surface)
-        self._right_sidebar = RightSideBar(parent=surface)
-        self._popup_box = PopUpBox(parent=surface)
+        self._header = None
+        self._footer = None
+        self._left_sidebar = None
+        self._right_sidebar = None
+        self._popup_box = None
 
         self._need_update = None
 
     def __str__(self):
         return "{}-{}".format(self._name, self.__class__.__name__)
 
-    def handle_events(self, events=[]):
-        pass 
+    def handle_events(self, event=None):
+        if not event:
+            return 
+        if event:
+            self._need_update = event
 
     def _write_texts(self, text, rect=None):
         """Create text surfaces to draw on window surface.
@@ -96,8 +99,19 @@ class Background():
         screen.fill(self._bg_color)
         for text_surface, pos in self._texts: 
             screen.blit(text_surface, pos)
-        
+        if self._right_sidebar:
+            self._right_sidebar.draw(screen)
+        if self._left_sidebar:
+            self._left_sidebar.draw(screen)
+        if self._footer:
+            self._footer.draw(screen)
+        if self._header:
+            self._header.draw(screen)
 
+
+class IntroBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'intro', surface=surface)
 
 class VideoBackground(Background):
     def __init__(self, path):
@@ -111,12 +125,13 @@ class VideoBackground(Background):
     def paint(self, screen):
         self.video.preview(screen)
 
-
-class IntroBackground(Background):
-    def __init__(self, surface):
-        Background.__init__(self, 'intro',surface=surface) 
-        
-
 class ChooseBackground(Background):
     def __init__(self, surface):
-        Background.__init__(self, 'choose', surface=surface)
+        Background.__init__(self, 'choose', surface=surface) 
+        self._header = Header(parent=surface)
+        self._left_sidebar = LeftSideBar(parent=surface)
+        
+        
+class ChosenBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'chosen', surface=surface)

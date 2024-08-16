@@ -36,11 +36,28 @@ class PiApplication():
                 return event 
         return 
 
-    def find_change_event(self, events):
+    def find_event(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONUP:
                 return event 
         return 
+    
+    def find_change_event(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                if hasattr(event, 'state'):
+                    return event
+        return 
+
+    def find_button_event(self, events):
+        """Filter event for button effects and trigger
+        """
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN\
+                    or event.type == pygame.MOUSEBUTTONUP\
+                    or event.type == pygame.MOUSEMOTION:
+                return event 
+        return
         
     def main_loop(self):
         try:
