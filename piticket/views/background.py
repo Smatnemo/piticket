@@ -1,56 +1,15 @@
 import pygame 
-from piticket.fonts import get_pygame_font
 from piticket.videoplayer import VideoPygame
+from piticket.utils import multiline_text_to_surfaces
+from piticket.views.box import Header, Footer, PopUpBox, PopUpBoxProcessing, RightSideBar, LeftSideBar
 
-def multiline_text_to_surfaces(text, color, rect, align='center'):
-    """Return a list of text surfaces(pygame.Surface) and corresponding positions
-    The ``align```parameter can be one of:
-        * top-left
-        * top-center
-        * top-right
-        * center-left
-        * center
-        * center-right
-        * bottom-left
-        * bottom-center
-        * bottom-right
-    """
-    surfaces = []
-    # split text into list of strings using newline character
-    lines = text.splitlines()
-    # Return a SysFont object corresponding to the longest string
-    font = get_pygame_font(max(lines, key=len),'nimbussansnarrow',rect.width,rect.height//len(lines))
-
-    for i, line in enumerate(lines):
-        surface = font.render(line, True, color)
-        if align.endswith('left'):
-            x = rect.left
-        elif align.endswith('center'):
-            x = rect.centerx - surface.get_rect().width//2
-        elif align.endswith('right'):
-            x = rect.right - surface.get_rect().width
-        else:
-            raise ValueError("Invalid horizontal argument '{}'".format(align))
-
-        height = surface.get_rect().height
-        if align.startswith('top'):
-            y = rect.top + i*height
-        elif align.startswith('center'):
-            y = rect.centery - (len(lines)*height)//2 + height*i
-        elif align.startswith('bottom'):
-            y = rect.bottom - len(lines)*height + i*height
-        else:
-            raise ValueError("Invalid vertical argument '{}'".format(align))
-   
-        surfaces.append((surface,surface.get_rect(x=x,y=y)))
-
-    return surfaces
 
 class Background():
     def __init__(self, image_name, 
                 bg_color=(0,0,0), 
                 text_color=(255,255,255), 
-                font_size=12):
+                font_size=12,
+                surface=None):
         """
         :attr _bg_color: background color
         :type _bg_color: tuple
@@ -62,7 +21,8 @@ class Background():
         :type _rect: pygame.Rect
         :attr font: is a font object used to render text to pygame surface
         :type font: pygame.font.SysFont or pygame.font.Font
-
+        :attr surface: pygame surface to initialize header, footer and left and right sidebars
+        :thype surface: pygame.Surface
         """
         self._bg_color = bg_color 
         
@@ -77,7 +37,11 @@ class Background():
 
         self._rect = None
 
-        self._popup_box = None
+        self._header = Header(parent=surface)
+        self._footer = Footer(parent=surface)
+        self._left_sidebar = LeftSideBar(parent=surface)
+        self._right_sidebar = RightSideBar(parent=surface)
+        self._popup_box = PopUpBox(parent=surface)
 
         self._need_update = None
 
@@ -149,5 +113,10 @@ class VideoBackground(Background):
 
 
 class IntroBackground(Background):
-    def __init__(self):
-        Background.__init__(self, 'intro') 
+    def __init__(self, surface):
+        Background.__init__(self, 'intro',surface=surface) 
+        
+
+class ChooseBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'choose', surface=surface)

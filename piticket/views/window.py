@@ -49,6 +49,6 @@ class PiWindow():
         self._update_background(background.VideoBackground(video))
 
     def show_intro(self):
-        self._update_background(background.IntroBackground())
+        self._update_background(background.IntroBackground(self.surface))
 
     

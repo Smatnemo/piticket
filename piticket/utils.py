@@ -5,7 +5,7 @@ import platform
 
 
 import os.path as osp
-
+from piticket.fonts import get_pygame_font
 
 LOGGER = logging.getLogger('piticket')
 
@@ -122,3 +122,48 @@ def rename_gifs(fullpath_frames):
             os.rename(frame,osp.join(head,f'frame_0{name}.png'))
         if len(name) == 2:
             os.rename(frame,osp.join(head,f'frame_{name}.png'))
+
+
+def multiline_text_to_surfaces(text, color, rect, align='center'):
+    """Return a list of text surfaces(pygame.Surface) and corresponding positions
+    The ``align```parameter can be one of:
+        * top-left
+        * top-center
+        * top-right
+        * center-left
+        * center
+        * center-right
+        * bottom-left
+        * bottom-center
+        * bottom-right
+    """
+    surfaces = []
+    # split text into list of strings using newline character
+    lines = text.splitlines()
+    # Return a SysFont object corresponding to the longest string
+    font = get_pygame_font(max(lines, key=len),'nimbussansnarrow',rect.width,rect.height//len(lines))
+
+    for i, line in enumerate(lines):
+        surface = font.render(line, True, color)
+        if align.endswith('left'):
+            x = rect.left
+        elif align.endswith('center'):
+            x = rect.centerx - surface.get_rect().width//2
+        elif align.endswith('right'):
+            x = rect.right - surface.get_rect().width
+        else:
+            raise ValueError("Invalid horizontal argument '{}'".format(align))
+
+        height = surface.get_rect().height
+        if align.startswith('top'):
+            y = rect.top + i*height
+        elif align.startswith('center'):
+            y = rect.centery - (len(lines)*height)//2 + height*i
+        elif align.startswith('bottom'):
+            y = rect.bottom - len(lines)*height + i*height
+        else:
+            raise ValueError("Invalid vertical argument '{}'".format(align))
+   
+        surfaces.append((surface,surface.get_rect(x=x,y=y)))
+
+    return surfaces

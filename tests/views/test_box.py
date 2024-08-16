@@ -1,5 +1,7 @@
 import pygame
-from piticket.views.box import Box, Button, PopUpBox, PopUpBoxProcessing
+import pytest
+from piticket.views.box import (Box, Button, PopUpBox, PopUpBoxProcessing, Header,
+                                Footer, RightSideBar, LeftSideBar)
 
 # Auxiliary function
 def print_func(*args):
@@ -59,23 +61,39 @@ def test_clear_button(view_loop):
     view_loop(button.clear, win)
 
 
-# Test PopUpBox
-popupbox = PopUpBox(parent=win)
-# Create call back functions for buttons
-popupbox.btn1.clicked(print_func, 'Clicked Button 1')
-popupbox.btn2.clicked(print_func, 'Clicked Button 2')
-
 def test_popupbox_update(view_loop):
+    popupbox = PopUpBox(parent=win,timeout=10)
+    # Create call back functions for buttons
+    popupbox.btn1.clicked(print_func, 'Clicked Button 1')
+    popupbox.btn2.clicked(print_func, 'Clicked Button 2')
     view_loop(popupbox.update, win)
-
-def test_popupbox_clear(view_loop):
     view_loop(popupbox.clear, win)
+    
 
-popupprocess = PopUpBoxProcessing(pygame.event.Event(pygame.MOUSEBUTTONUP,{'btn':1}),parent=win,gif_image='Spinner_transparent')
-popupprocess.triggered(print_func, 'Clicked Button pop up')
 def test_popupboxprocessing_update(view_loop):
+    popupprocess = PopUpBoxProcessing(pygame.event.Event(pygame.MOUSEBUTTONUP,{'btn':1}),parent=win,gif_image='Spinner_transparent')
+    popupprocess.triggered(print_func, 'Clicked Button pop up')
     view_loop(popupprocess.update, win)
-
-def test_popupboxprocessing_clear(view_loop):
     view_loop(popupprocess.clear, win)
+    
+def test_header_draw(view_loop):
+    header = Header(parent=win)
+    view_loop(header.draw,win)
+    view_loop(header.clear,win)
+
+def test_footer_draw(view_loop):
+    footer = Footer(parent=win)
+    view_loop(footer.draw,win)
+    view_loop(footer.clear,win)
+
+def test_right_side_bar_draw(view_loop):
+    right_side_bar = RightSideBar(parent=win)
+    view_loop(right_side_bar.draw,win)
+    view_loop(right_side_bar.clear,win)
+
+def test_left_side_bar_draw(view_loop):
+    left_side_bar = LeftSideBar(parent=win)
+    view_loop(left_side_bar.draw,win)
+    view_loop(left_side_bar.clear,win)
+
         

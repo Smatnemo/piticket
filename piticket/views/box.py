@@ -4,7 +4,7 @@ import itertools
 import os.path as osp
 from PIL import Image
 from piticket.pictures import get_pygame_image, get_gifs
-from piticket.views.background import multiline_text_to_surfaces
+from piticket.utils import multiline_text_to_surfaces
 
 class Box:
     TOPLEFT = 'top-left'
@@ -58,6 +58,7 @@ class Box:
         :type parent: object
         """
         self.parent = parent
+        self.margin = margin 
         # Pass a tuple and create a pygame Rect: check setter
         self.rect = (x,y,width,height)
         # Set these after creating pygame Rect
@@ -65,10 +66,10 @@ class Box:
         self.y = y 
         self.width = width 
         self.height = height 
+        
         # Call the position property method to validate and set value
         self.position = position
         self.color = color
-        self.margin = margin 
         self.padding = padding 
         self.border = border 
         self.border_radius = border_radius
@@ -113,11 +114,7 @@ class Box:
         if not isinstance(rect,(tuple,list)):
             raise ValueError(f'{rect} must be tuple or list.')
         assert len(rect) == 4, 'Length of tuple must be 4'
-        # Get parent rect
-        parent_rect = self.parent.get_rect()
-        x = parent_rect.x 
-        y = parent_rect.y
-        assert parent_rect.collidepoint((rect[0]+x,rect[1]+y)), 'Coordinates must be within parent'
+        # Child rect without margin
         self._rect = pygame.Rect(rect)
 
     @property
@@ -163,29 +160,45 @@ class Box:
 
     def position_box(self):
         """Position current Box within parent Box using the position attribute"""
-        if self.parent:
-            if self.position:
-                width = self.rect.width
-                if self.position.endswith('left'):
-                    self.rect.x = self.parent.get_rect().left
-                elif self.position.endswith('center'):
-                    self.rect.x = self.parent.get_rect().centerx - width//2
-                elif self.position.endswith('right'):
-                    self.rect.x = self.parent.get_rect().right - width
-                    
-                height = self.rect.height
-                if self.position.startswith('top'):
-                    self.rect.y = self.parent.get_rect().top
-                elif self.position.startswith('center'):
-                    self.rect.y = self.parent.get_rect().centery - height//2
-                elif self.position.startswith('bottom'):
-                    self.rect.y = self.parent.get_rect().bottom - height
+        parent_rect = self.parent.get_rect()
+        if self.position:
+            width = self.rect.width
+            if self.position.endswith('left'):
+                self.rect.x = parent_rect.left
+            elif self.position.endswith('center'):
+                self.rect.x = parent_rect.centerx - width//2
+            elif self.position.endswith('right'):
+                self.rect.x = parent_rect.right - width
+                
+            height = self.rect.height
+            if self.position.startswith('top'):
+                self.rect.y = parent_rect.top
+            elif self.position.startswith('center'):
+                self.rect.y = parent_rect.centery - height//2
+            elif self.position.startswith('bottom'):
+                self.rect.y = parent_rect.bottom - height
+            
+            if self.__class__.__name__ == 'PopUpBox':
+                print(parent_rect.bottom)
+                print(self.rect)
+                # exit()dfs
 
-            elif not self.position:
-                # if only parent exists, tranlate x and y positions to fit the positions of the parent
-                self.rect.x = self.parent.get_rect().x + self.rect.x
-                self.rect.y = self.parent.get_rect().y + self.rect.y
+        elif not self.position:
+            # if only parent exists, tranlate x and y positions to fit the positions of the parent
+            self.rect.x = parent_rect.x + self.rect.x
+            self.rect.y = parent_rect.y + self.rect.y
 
+        # Check that the margins + box dimensions are within the parent
+        try:
+            assert parent_rect.collidepoint((self.rect.x,
+                                self.rect.y)), f'Coordinates x:{self.rect.x}, y:{self.rect.y} must be within the parent dimensions {parent_rect.x}, {parent_rect.y}, {parent_rect.width}, {parent_rect.height}'
+            assert parent_rect.collidepoint((self.rect.x+self.rect.width, 
+                                    self.rect.y+self.rect.height)),f'Coordinates {self.rect.x+self.rect.width}, {self.rect.y+self.rect.height} for bottom-right must be within the parent {parent_rect.x}, {parent_rect.y}, {parent_rect.width}, {parent_rect.height}' 
+        except AssertionError as ex:
+            if self.rect.x+self.rect.width==parent_rect.width or self.rect.y+self.rect.height==parent_rect.height:
+                pass
+            else:
+                raise AssertionError(ex)
         self.position_text()
 
     def position_text(self, align='center'):
@@ -202,14 +215,16 @@ class Box:
             rect = self.rect
         else:
             return
-        if not osp.isfile(self.content):
-            self.content_surfaces = multiline_text_to_surfaces(self.content, 
-                                                        self.content_color, 
-                                                        rect, 
-                                                        align=align)
-        else:
-            surface = get_pygame_image(self.content, size=(rect.width, rect.height), color=None)
-            self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
+        if self.content is not None:
+            if not osp.isfile(self.content):
+                self.content_surfaces = multiline_text_to_surfaces(self.content, 
+                                                            self.content_color, 
+                                                            rect, 
+                                                            align=align)
+            else:
+                surface = get_pygame_image(self.content, size=(rect.width, rect.height), color=None)
+                self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
+        
 
     def _draw_text(self, screen):
         # By default, content surface must always be in the center of the box
@@ -227,7 +242,9 @@ class Box:
             color = self.color 
         if not border_color:
             border_color = self.border_color 
-
+        # # Draw external box with margin
+        # rect_with_margin = self.rect.inflate(2*self.margin,2*self.margin)
+        # pygame.draw.rect(screen, self.screen_color, rect_with_margin,)
         # Draw box with box self.color
         pygame.draw.rect(screen, color, self.rect,
                         border_radius=self.border_radius)
@@ -291,7 +308,10 @@ class Box:
         self._draw_text(screen)
 
     def clear(self, screen):
-        screen.fill(self.screen_color,rect=self.rect)
+        if self.screen_color:
+            screen.fill(self.screen_color,rect=self.rect)
+        else:
+            screen.fill((0,0,0))
 
 class Button(Box):
     def __init__(self, x=0, y=0,
@@ -401,14 +421,27 @@ class PopUpBox(Box):
     def __init__(self, parent=None,
                 x=0, y=0,
                 width=300, height=200,
-                position='center',
+                position='bottom-center',
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
-                content='Would you like to \n continue?',
+                content='Would you like to continue?',
                 content_color=(255,255,255),
                 color=(133,133,133),
-                interactable=False):
+                interactable=False,
+                timeout=10):
+        """:param timeout: how long the pop up box should remain on the screen
+           :type timeout: int"""
+        # Marks the beginning
+        self._started = True 
+        # For timeout
+        self._start_time = time.time()
+        self._end_time = timeout + self._start_time
+        self._timeout = timeout
+        self._timeout_text = ''
+
+        self._content = content
+
         Box.__init__(self, 
                 parent, x, y,
                 width, height,
@@ -418,13 +451,37 @@ class PopUpBox(Box):
                 border_color, content,
                 content_color, color,
                 interactable)
+
+        # Marks the end of the popupbox execution circle when True
+        self._triggered = False
+        self._triggered_callback_func = None
+        self._triggered_callback_args = None 
+        self._triggered_callback_kwargs = None
+
         # Initialize and position buttons
         self.btn1 = Button(content='Yes',parent=self)
         self.btn2 = Button(content='No',parent=self)
         self.position_buttons()
     
+    def handle_events(self,event):
+        if not event:
+            return 
+        
+    def triggered(self, func, *args, **kwargs):
+        self._triggered_callback_func = func 
+        self._triggered_callback_args = args 
+        self._triggered_callback_kwargs = kwargs
+
     def position_text(self, align='top-center'):
+        # Keep creating text surfaces for timer
+        self._timeout_text = f'App will lock in {int(self._end_time-self._start_time)} seconds.\n'
+        if self._end_time - self._start_time < 0:
+            self._started = False
+            self._triggered = True
+        self.content = self._timeout_text + self._content
         Box.position_text(self, align)
+        # Get time for next loop
+        self._start_time = time.time()
 
     def position_buttons(self):
         # Calculate the center coordinates
@@ -441,11 +498,20 @@ class PopUpBox(Box):
             self.btn2.position_text()
 
     def update(self, event, screen):
-        self.draw(screen)
-        # Draw and handle events of buttons
-        # after drawing pop up box on screen
-        self.btn1.update(event, screen)
-        self.btn2.update(event, screen)
+        # Recreate and reposition text surfaces
+        self.position_text()
+        if self._started:
+            self.draw(screen)
+            # Draw and handle events of buttons
+            # after drawing pop up box on screen
+            self.btn1.update(event,screen)
+            self.btn2.update(event,screen)
+        if self._triggered:
+            if self._triggered_callback_func:
+                self._triggered_callback_func(*self._triggered_callback_args,
+                                            **self._triggered_callback_kwargs)
+            self.clear(screen)
+
 
 class PopUpBoxProcessing(Box):
     def __init__(self, event,
@@ -550,6 +616,7 @@ class PopUpBoxProcessing(Box):
             # Draw pop up box on screen
             self.draw(screen)
         if self._triggered:
+            # Use triggered to execute callback function just once
             self.clear(screen)
             # Execute any callback functions if any
             if self._triggered_callback_func:
@@ -558,5 +625,109 @@ class PopUpBoxProcessing(Box):
             self._triggered = False
         
         
+class Header(Box):
+    def __init__(self, parent=None, 
+                x=0, y=0, width=None, 
+                height=80, 
+                margin=20, padding=10,
+                border=1, border_radius=0,
+                border_color=(0,0,0),
+                content=None,
+                content_color=(255,255,255),
+                color=(133,133,133),
+                interactable=False):
 
+        position=self.TOPLEFT
+
+        if not width:
+            width = parent.get_rect().width
+
+        Box.__init__(self,
+                parent, x, y,
+                width, height,
+                position,
+                margin, padding,
+                border, border_radius,
+                border_color, content,
+                content_color, color,
+                interactable)
+
+class Footer(Box):
+    def __init__(self,parent=None, 
+                x=0, y=0, width=None, 
+                height=80, 
+                margin=20, padding=10,
+                border=1, border_radius=3,
+                border_color=(0,0,0),
+                content=None,
+                content_color=(255,255,255),
+                color=(133,133,133),
+                interactable=False):
+
+        position=self.BOTTOMLEFT
+        if not width:
+            width = parent.get_rect().width
+
+        Box.__init__(self,parent, x, y,
+                width, height,
+                position,
+                margin, padding,
+                border, border_radius,
+                border_color, content,
+                content_color, color,
+                interactable)
+        
+
+class LeftSideBar(Box):
+    def __init__(self,parent=None, 
+                x=0, y=0, width=80, 
+                height=None, 
+                margin=20, padding=10,
+                border=1, border_radius=3,
+                border_color=(0,0,0),
+                content=None,
+                content_color=(255,255,255),
+                color=(133,133,133),
+                interactable=False):
+
+        position=self.TOPLEFT 
+        if not height:
+            height = parent.get_rect().height
+
+        Box.__init__(self,
+                parent, x, y,
+                width, height,
+                position,
+                margin, padding,
+                border, border_radius,
+                border_color, content,
+                content_color, color,
+                interactable)
+
+class RightSideBar(Box):
+    def __init__(self,parent=None, 
+                x=0, y=0, width=80, 
+                height=None, 
+                margin=20, padding=10,
+                border=1, border_radius=3,
+                border_color=(0,0,0),
+                content=None,
+                content_color=(255,255,255),
+                color=(133,133,133),
+                interactable=False):
+
+        position=self.TOPRIGHT
+        if not height:
+            height = parent.get_rect().height
+
+        Box.__init__(self,
+                parent, x, y,
+                width, height,
+                position,
+                margin, padding,
+                border, border_radius,
+                border_color, content,
+                content_color, color,
+                interactable)
+        
 
