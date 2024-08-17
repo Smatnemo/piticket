@@ -12,22 +12,18 @@ class ViewPlugin():
 
     @hookimpl 
     def state_wait_enter(self,app,win):
-        pass 
+        win.drop_cache()
 
     @hookimpl 
-    def state_wait_do(self,app,win,events):
+    def state_wait_do(self,app,win):
         win.show_intro()
 
     @hookimpl 
     def state_wait_validate(self,app,win,events):
-        event = app.find_event(events)
-        if event:
+        change_event = app.find_event(events)
+        if change_event:
             return 'choose'
-
-    @hookimpl 
-    def state_wait_exit(self,app,win):
-        pass 
-
+        
     @hookimpl
     def state_choose_enter(self,app,win):
         """"""
@@ -45,10 +41,10 @@ class ViewPlugin():
         # Find event for next state
         change_event = app.find_change_event(events)  
         if change_event:
-            if change_event.state=='chosen':
-                return 'chosen'
             if change_event.state=='choose':
                 return 'choose'
+            if change_event.state=='wait':
+                return 'wait'
         if self.screen_lock_timer.is_timeout():
             return 'wait'
         

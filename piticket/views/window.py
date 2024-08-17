@@ -72,9 +72,9 @@ class PiWindow():
         """
         self._popup_box = PopUpBox(parent=self.surface, timeout=timeout)
         # End pop up box when Yes button is clicked and return to to same state
-        self._popup_box.btn1.clicked(self.post_event, state_name)
+        self._popup_box.btn1.clicked(app.post_event, state_name)
         # End pop up box when No button is clicked and return to wait state
-        self._popup_box.btn2.clicked(print_func, 'Clicked No Button')
+        self._popup_box.btn2.clicked(app.post_event, 'wait')
         # End pop up box after timeout duration
         self._popup_box.triggered(print_func, 'Triggered at the end of PopUp')
 
@@ -86,10 +86,11 @@ class PiWindow():
 
         self._popup_box = None
 
-    def post_event(self, state_name):
-        """Place an event in the event list.
+    def drop_cache(self):
+        """Drop all cached background and foreground to force refreshing the view.
         """
-        pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONUP,state=state_name))
+        self.current_background = None 
+        self.backgrounds = {}
 
 # To end pop up box, set _started = False 
 # To change state, use pygame.MOUSEBUTTONUP with custom attribute of state name

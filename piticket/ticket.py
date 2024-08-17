@@ -29,6 +29,12 @@ class PiApplication():
 
     def _initialize(self):
         pass 
+    
+    def post_event(self, state_name):
+        """Place an event in the event list.
+        """
+        pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONUP,state=state_name))
+
 
     def find_quit_event(self, events):
         for event in events:

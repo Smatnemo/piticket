@@ -221,7 +221,7 @@ class Video:
             p = subprocess.run(command, capture_output=True)
         except FileNotFoundError:
             self._missing_ffmpeg = True
-        print()
+        
         self._chunks[i - self._chunks_played - 1] = p.stdout
 
     def _update_threads(self):

@@ -85,6 +85,7 @@ class Background():
 
     def resize_texts(self, rect=None):
         """Resize text pygame surfaces"""
+        self._texts = []
         self._write_texts('Ticket text\nNext Please step forward!', rect)
 
     def resize(self, screen):
@@ -117,10 +118,6 @@ class VideoBackground(Background):
     def __init__(self, path):
         Background.__init__(self, path)
         self.video = VideoPygame(self._name)
-        self.video.play()
-
-    def resize(self, screen):
-        pass
 
     def paint(self, screen):
         self.video.preview(screen)

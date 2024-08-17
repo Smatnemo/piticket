@@ -453,6 +453,10 @@ class PopUpBox(Box):
     def handle_events(self,event):
         if not event:
             return 
+        if event.type == pygame.MOUSEBUTTONUP\
+            and (self.btn1.rect.collidepoint(event.pos)\
+            or self.btn2.rect.collidepoint(event.pos)):
+            self.started = False
         
     def triggered(self, func, *args, **kwargs):
         self._triggered_callback_func = func 
@@ -493,6 +497,7 @@ class PopUpBox(Box):
             # after drawing pop up box on screen
             self.btn1.update(event,screen)
             self.btn2.update(event,screen)
+            self.handle_events(event)
         if self._triggered:
             if self._triggered_callback_func:
                 self._triggered_callback_func(*self._triggered_callback_args,
