@@ -8,6 +8,6 @@ def test_init(view_loop):
     view_loop(win.show_intro)
 
 def test_video(view_loop):
-    view_loop(win.show_video)
+    view_loop(win.show_choice)
 
 
