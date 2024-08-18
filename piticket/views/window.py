@@ -10,7 +10,7 @@ class PiWindow():
     FULLSCREEN = 'fullscreen'
 
     def __init__(self, title,
-                bg_color=(255,0,0),
+                bg_color=(255,255,255),
                 text_color=(255,255,255),
                 size=(800, 480)):
 

@@ -6,7 +6,7 @@ from piticket.views.box import Header, Footer, RightSideBar, LeftSideBar
 
 class Background():
     def __init__(self, image_name, 
-                bg_color=(0,0,0), 
+                bg_color=(255,255,255), 
                 text_color=(255,255,255), 
                 font_size=12,
                 surface=None):
@@ -127,9 +127,9 @@ class VideoBackground(Background):
 class ChooseBackground(Background):
     def __init__(self, surface):
         Background.__init__(self, 'choose', surface=surface) 
-        self._header = Header(parent=surface, color=(0, 73, 83), border_color=(0, 73, 83))
+        self._header = Header(parent=surface, color=(0, 106, 78), border_color=(0, 106, 78))
         self._left_sidebar = LeftSideBar(parent=surface, color=(208, 240, 192), border_color=(208, 240, 192))
-        
+    
         
 class ChosenBackground(Background):
     def __init__(self, surface):

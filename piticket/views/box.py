@@ -408,7 +408,9 @@ class PopUpBox(Box):
                 content_color=(255,255,255),
                 color=(133,133,133),
                 interactable=False,
-                timeout=10):
+                timeout=10,
+                button1_config={'color':(0,191,0),'clicked_color':(0,255,0),'hovered_color':(0,127,0),'content':'Yes'},
+                button2_config={'color':(191,0,0),'clicked_color':(255,0,0),'hovered_color':(127,0,0),'content':'No'}):
         """:param timeout: how long the pop up box should remain on the screen
            :type timeout: int"""
         # Marks the beginning
@@ -438,8 +440,16 @@ class PopUpBox(Box):
         self._triggered_callback_kwargs = None
 
         # Initialize and position buttons
-        self.btn1 = Button(content='Yes',parent=self)
-        self.btn2 = Button(content='No',parent=self)
+        self.btn1 = Button(content=button1_config['content'],
+                            color=button1_config['color'],
+                            clicked_color=button1_config['clicked_color'],
+                            hovered_color=button1_config['hovered_color'],
+                            parent=self)
+        self.btn2 = Button(content=button2_config['content'],
+                            color=button2_config['color'],
+                            clicked_color=button2_config['clicked_color'],
+                            hovered_color=button2_config['hovered_color'],
+                            parent=self)
         self.position_buttons()
     
     @property
