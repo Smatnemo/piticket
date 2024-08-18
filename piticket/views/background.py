@@ -86,7 +86,9 @@ class Background():
     def resize_texts(self, rect=None):
         """Resize text pygame surfaces"""
         self._texts = []
-        self._write_texts('Ticket text\nNext Please step forward!', rect)
+        text = 'Ticket'
+        if text:
+            self._write_texts(text, rect)
 
     def resize(self, screen):
         """Resize objects to fit to the screen
