@@ -7,8 +7,9 @@ import platform
 
 import os.path as osp
 from piticket.fonts import get_pygame_font
+from piticket import project_name
 
-LOGGER = logging.getLogger('piticket')
+LOGGER = logging.getLogger(project_name)
 
 class PoolingTimer():
     """Time to be checked in a pooling loop to check if time has been exceeded

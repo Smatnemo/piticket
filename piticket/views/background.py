@@ -1,6 +1,7 @@
 import pygame 
 from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
+from piticket.pictures import get_filename
 from piticket.views.box import Header, Footer, RightSideBar, LeftSideBar
 
 
@@ -127,8 +128,11 @@ class VideoBackground(Background):
 class ChooseBackground(Background):
     def __init__(self, surface):
         Background.__init__(self, 'choose', surface=surface) 
-        self._header = Header(parent=surface, color=(0, 106, 78), border_color=(0, 106, 78))
-        self._left_sidebar = LeftSideBar(parent=surface, color=(208, 240, 192), border_color=(208, 240, 192))
+        self._header = Header(parent=surface, height=160, 
+                            color=(0, 106, 78), border_color=(0, 106, 78),
+                            padding=0, content=get_filename('nrc.jpg'), 
+                            content_position='top-right')
+        self._left_sidebar = LeftSideBar(parent=surface, width=120, color=(208, 240, 192), border_color=(208, 240, 192))
     
         
 class ChosenBackground(Background):

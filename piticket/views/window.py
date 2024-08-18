@@ -12,7 +12,7 @@ class PiWindow():
     def __init__(self, title,
                 bg_color=(255,255,255),
                 text_color=(255,255,255),
-                size=(800, 480)):
+                size=(1200, 900)):
 
         self.bg_color = bg_color 
         self.__size = size

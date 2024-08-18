@@ -2,7 +2,7 @@ import pygame
 import pytest
 from piticket.views.box import (Box, Button, PopUpBox, PopUpBoxProcessing, Header,
                                 Footer, RightSideBar, LeftSideBar)
-
+from piticket.pictures import get_filename
 # Auxiliary function
 def print_func(*args):
     if args: 
@@ -22,6 +22,7 @@ box = Box(x=10, y=10,
         border_color=(0,0,0), 
         content='Box', 
         content_color=(0,0,0), 
+        content_position='center',
         color=(255, 255, 255), 
         parent=win,
         interactable=True)
@@ -34,6 +35,7 @@ image_box = Box(x=10, y=10,
         border_color=(0,0,0), 
         content=content, 
         content_color=(0,0,0), 
+        content_position='center',
         color=(255, 255, 255),
         parent=win, 
         interactable=True)
@@ -67,7 +69,7 @@ def test_popupboxprocessing_update(view_loop):
     view_loop(popupprocess.update, win)
     
 def test_header_draw(view_loop):
-    header = Header(parent=win)
+    header = Header(parent=win, content=get_filename('nrc.jpg'), content_position='top-right')
     view_loop(header.draw,win)
 
 def test_footer_draw(view_loop):

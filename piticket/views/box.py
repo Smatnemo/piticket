@@ -6,6 +6,38 @@ from PIL import Image
 from piticket.pictures import get_pygame_image, get_gifs
 from piticket.utils import multiline_text_to_surfaces
 
+def create_content_surface(*images,rect=None,align='center'):
+    """Return a list of tuples(pygame surface, rect)
+    :param images: surface with an image
+    :type images: pygame.Surface
+    :param rect: rect in which to position content
+    :type rect: pygame.Rect
+    :param align: where to position it in the rect
+    :type align: str
+    """
+    surfaces = []
+    for image in images:
+        width = image.get_rect().width
+        if align.endswith('left'):
+            x = rect.left
+        elif align.endswith('center'):
+            x = rect.centerx - width//2
+        elif align.endswith('right'):
+            x = rect.right - width
+        else:
+            raise ValueError(f'{aign} value is wrong')
+
+        height = image.get_rect().height
+        if align.startswith('top'):
+            y = rect.top
+        elif align.startswith('center'):
+            y = rect.centery - height//2
+        elif align.startwith('bottom'):
+            y = rect.bottom - height
+        else:
+            raise ValueError(f'{align} value is wrong')
+        surfaces.append((image,image.get_rect(x=x,y=y)))
+    return surfaces
 class Box:
     TOPLEFT = 'top-left'
     TOPCENTER = 'top-center'
@@ -27,6 +59,7 @@ class Box:
                 border:int, border_radius:int,
                 border_color:tuple,
                 content:str, content_color:tuple,
+                content_position: str,
                 color:tuple,  interactable:bool):
         """Generic base box class for all box elements to be implemented
         in the app.
@@ -77,6 +110,7 @@ class Box:
         
         self.content = content
         self.content_color = content_color
+        self.content_position = content_position
         self.content_surfaces = []
 
         self.interactable = interactable
@@ -126,7 +160,6 @@ class Box:
             raise ValueError(f'Choose valid value from POSITIONS - {self.POSITIONS}')
         self._position = pos 
 
-
     @property 
     def padding(self):
         """Get the value of padding"""
@@ -146,14 +179,6 @@ class Box:
         if isinstance(pixel_coord,(tuple,list)):
             assert len(pixel_coord) == 2, "Pixel coordinates should be 2"
             return self.color
-
-    def change_xy(self, coord):
-        """Change the position of the box using x, y coordinates and 
-        change the coordinates of the content as well
-        """
-        assert len(coord) == 2, "Coord must be 2"
-        # Check that content is within the box
-        assert self.rect.collidepoint(coord), "Coord must be within the "
 
     def position_box(self):
         """Position current Box within parent Box using the position attribute"""
@@ -191,14 +216,11 @@ class Box:
                 pass
             else:
                 raise AssertionError(ex)
-        self.position_text()
+        self.position_content()
 
-    def position_text(self, align='center'):
-        """Position text within Box. Possible align values are in self.POSITIONS
+    def position_content(self):
+        """Position content within Box. Possible align values are in self.POSITIONS
             and class attributes.
-        
-        :param align: position box within the rect
-        :type align: str
         """
         # Maximum padding value should not be greater that min(width, height)//2 as ensured in the padding setter
         if self.padding:
@@ -212,11 +234,10 @@ class Box:
                 self.content_surfaces = multiline_text_to_surfaces(self.content, 
                                                             self.content_color, 
                                                             rect, 
-                                                            align=align)
+                                                            align=self.content_position)
             else:
                 surface = get_pygame_image(self.content, size=(rect.width, rect.height), color=None)
-                self.content_surfaces = [(surface,surface.get_rect(center=self.rect.center))]
-        
+                self.content_surfaces = create_content_surface(surface,rect=rect,align=self.content_position)
 
     def _draw_text(self, screen):
         # By default, content surface must always be in the center of the box
@@ -301,6 +322,7 @@ class Button(Box):
                 border_color=(0,0,0),
                 content='Button',
                 content_color=(255,255,255),
+                content_position='center',
                 color=(133,133,133),
                 clicked_color=(60,60,60),
                 clicked_border_color=(255,255,255),
@@ -318,6 +340,7 @@ class Button(Box):
                     border_color,
                     content, 
                     content_color,
+                    content_position,
                     color,
                     interactable)
 
@@ -344,11 +367,16 @@ class Button(Box):
         Box._draw_box(self, screen, self.hovered_color, self.hovered_border_color)
 
     def clicked(self, func, *args, **kwargs):
+        """Set callback function when the button is clicked and released
+        """
         self._clicked_callback_func = func
         self._clicked_callback_args = args 
         self._clicked_callback_kwargs = kwargs
 
     def hovered(self, func, *args, **kwargs):
+        """Set callback function when the button is hovered over. Mainly for a function
+        that will describe the button's use.
+        """
         self._hovered_callback_func = func 
         self._hovered_callback_args = args 
         self._hovered_callback_kwargs = kwargs
@@ -406,6 +434,7 @@ class PopUpBox(Box):
                 border_color=(0,0,0),
                 content='Would you like to continue?',
                 content_color=(255,255,255),
+                content_position='top-center',
                 color=(133,133,133),
                 interactable=False,
                 timeout=10,
@@ -430,7 +459,8 @@ class PopUpBox(Box):
                 margin, padding,
                 border, border_radius,
                 border_color, content,
-                content_color, color,
+                content_color, 
+                content_position, color,
                 interactable)
 
         # Marks the end of the popupbox execution circle when True
@@ -473,14 +503,14 @@ class PopUpBox(Box):
         self._triggered_callback_args = args 
         self._triggered_callback_kwargs = kwargs
 
-    def position_text(self, align='top-center'):
+    def position_content(self):
         # Keep creating text surfaces for timer
         self._timeout_text = f'App will lock in {int(self._end_time-self._start_time)} seconds.\n'
         if self._end_time - self._start_time < 0:
             self.started = False
             self._triggered = True
         self.content = self._timeout_text + self._content
-        Box.position_text(self, align)
+        Box.position_content(self)
         # Get time for next loop
         self._start_time = time.time()
 
@@ -491,16 +521,16 @@ class PopUpBox(Box):
             self.btn1.rect.x = x - self.btn1.rect.width - self.btn1.margin 
             self.btn1.rect.y = y
             # Reposition text
-            self.btn1.position_text()
+            self.btn1.position_content()
         if hasattr(self,'btn2'):
             self.btn2.rect.x = self.btn2.margin + x
             self.btn2.rect.y = y
             # Reposition text
-            self.btn2.position_text()
+            self.btn2.position_content()
 
     def update(self, event, screen):
         # Recreate and reposition text surfaces
-        self.position_text()
+        self.position_content()
         if self.started:
             self.draw(screen)
             # Draw and handle events of buttons
@@ -524,7 +554,7 @@ class PopUpBoxProcessing(Box):
                 border_color=(0,0,0),
                 content='Processing',
                 content_color=(255,255,255),
-                color=(133,133,133),
+                content_position='top-center',color=(133,133,133),
                 interactable=False,
                 gif_image=None):
         """:param gif_name: the name of the folder with gif frames.
@@ -542,7 +572,8 @@ class PopUpBoxProcessing(Box):
                 margin, padding,
                 border, border_radius,
                 border_color, content,
-                content_color, color,
+                content_color, 
+                content_position, color,
                 interactable)
         # Marks the beginning
         self.started = True 
@@ -584,8 +615,8 @@ class PopUpBoxProcessing(Box):
             self._triggered = True
             self.started = False
 
-    def position_text(self,align='top-center'):
-        Box.position_text(self,align=align)
+    def position_content(self):
+        Box.position_content(self)
 
     def position_gif(self, image_surface, position='bottom-center'):
         """
@@ -626,7 +657,6 @@ class PopUpBoxProcessing(Box):
             self.draw(screen)
         if self._triggered:
             # Use triggered to execute callback function just once
-            self.clear(screen)
             # Execute any callback functions if any
             if self._triggered_callback_func:
                 self._triggered_callback_func(*self._triggered_callback_args,
@@ -636,20 +666,19 @@ class PopUpBoxProcessing(Box):
         
 class Header(Box):
     def __init__(self, parent=None, 
-                x=0, y=0, width=None, 
+                x=0, y=0, 
                 height=80, 
                 margin=20, padding=10,
                 border=1, border_radius=0,
                 border_color=(0,0,0),
                 content=None,
                 content_color=(255,255,255),
+                content_position='center',
                 color=(133,133,133),
                 interactable=False):
 
         position=self.TOPLEFT
-
-        if not width:
-            width = parent.get_rect().width
+        width = parent.get_rect().width
 
         Box.__init__(self,
                 parent, x, y,
@@ -658,24 +687,33 @@ class Header(Box):
                 margin, padding,
                 border, border_radius,
                 border_color, content,
-                content_color, color,
+                content_color, 
+                content_position, color,
                 interactable)
+
+    def draw(self, screen):
+        width = screen.get_rect().width 
+        if self.width != width:
+            self.width = width 
+            self.rect = (self.x, self.y, self.width, self.height)
+            self.position_box()
+        Box.draw(self, screen)
 
 class Footer(Box):
     def __init__(self,parent=None, 
-                x=0, y=0, width=None, 
+                x=0, y=0,  
                 height=80, 
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
                 content=None,
                 content_color=(255,255,255),
+                content_position='center',
                 color=(133,133,133),
                 interactable=False):
 
         position=self.BOTTOMLEFT
-        if not width:
-            width = parent.get_rect().width
+        width = parent.get_rect().width
 
         Box.__init__(self,parent, x, y,
                 width, height,
@@ -683,25 +721,32 @@ class Footer(Box):
                 margin, padding,
                 border, border_radius,
                 border_color, content,
-                content_color, color,
+                content_color, 
+                content_position, color,
                 interactable)
-        
+
+    def draw(self, screen):
+        width = screen.get_rect().width 
+        if self.width != width:
+            self.width = width 
+            self.rect = (self.x, self.y, self.width, self.height)
+            self.position_box()
+        Box.draw(self, screen)
 
 class LeftSideBar(Box):
     def __init__(self,parent=None, 
                 x=0, y=0, width=80, 
-                height=None, 
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
                 content=None,
                 content_color=(255,255,255),
+                content_position='center', 
                 color=(133,133,133),
                 interactable=False):
 
         position=self.TOPLEFT 
-        if not height:
-            height = parent.get_rect().height
+        height = parent.get_rect().height
 
         Box.__init__(self,
                 parent, x, y,
@@ -710,24 +755,31 @@ class LeftSideBar(Box):
                 margin, padding,
                 border, border_radius,
                 border_color, content,
-                content_color, color,
+                content_color, 
+                content_position, color,
                 interactable)
 
+    def draw(self, screen):
+        height = screen.get_rect().height 
+        if self.height != height:
+            self.height = height 
+            self.rect = (self.x, self.y, self.width, self.height)
+        Box.draw(self, screen)
+    
 class RightSideBar(Box):
     def __init__(self,parent=None, 
                 x=0, y=0, width=80, 
-                height=None, 
                 margin=20, padding=10,
                 border=1, border_radius=3,
                 border_color=(0,0,0),
                 content=None,
                 content_color=(255,255,255),
+                content_position='center',
                 color=(133,133,133),
                 interactable=False):
 
         position=self.TOPRIGHT
-        if not height:
-            height = parent.get_rect().height
+        height = parent.get_rect().height
 
         Box.__init__(self,
                 parent, x, y,
@@ -736,7 +788,13 @@ class RightSideBar(Box):
                 margin, padding,
                 border, border_radius,
                 border_color, content,
-                content_color, color,
+                content_color, 
+                content_position, color,
                 interactable)
-        
 
+    def draw(self, screen):
+        height = screen.get_rect().height 
+        if self.height != height:
+            self.height = height 
+            self.rect = (self.x, self.y, self.width, self.height)
+        Box.draw(self, screen)
