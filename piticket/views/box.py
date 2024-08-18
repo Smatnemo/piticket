@@ -3,8 +3,11 @@ import time
 import itertools
 import os.path as osp
 from PIL import Image
+from datetime import datetime
 from piticket.pictures import get_pygame_image, get_gifs
 from piticket.utils import multiline_text_to_surfaces
+from piticket.location import locator
+
 
 def create_content_surface(*images,rect=None,align='center'):
     """Return a list of tuples(pygame surface, rect)
@@ -38,6 +41,7 @@ def create_content_surface(*images,rect=None,align='center'):
             raise ValueError(f'{align} value is wrong')
         surfaces.append((image,image.get_rect(x=x,y=y)))
     return surfaces
+
 class Box:
     TOPLEFT = 'top-left'
     TOPCENTER = 'top-center'
@@ -109,9 +113,9 @@ class Box:
         self.border_color = border_color
         
         self.content = content
+        self.content_surfaces = []
         self.content_color = content_color
         self.content_position = content_position
-        self.content_surfaces = []
 
         self.interactable = interactable
         self._clicked = False 
@@ -229,7 +233,7 @@ class Box:
             rect = self.rect
         else:
             return
-        if self.content is not None:
+        if self.content:
             if not osp.isfile(self.content):
                 self.content_surfaces = multiline_text_to_surfaces(self.content, 
                                                             self.content_color, 
@@ -255,12 +259,13 @@ class Box:
             color = self.color 
         if not border_color:
             border_color = self.border_color 
-
+        
         # Draw box with box self.color
         pygame.draw.rect(screen, color, self.rect,
                         border_radius=self.border_radius)
         # Draw transparent box with only borders with color of self.border_color
-        pygame.draw.rect(screen, border_color, self.rect, width=self.border,
+        if self.border and self.border_color:
+            pygame.draw.rect(screen, border_color, self.rect, width=self.border,
                         border_radius=self.border_radius)
 
     def _draw_clicked_box(self):
@@ -615,9 +620,6 @@ class PopUpBoxProcessing(Box):
             self._triggered = True
             self.started = False
 
-    def position_content(self):
-        Box.position_content(self)
-
     def position_gif(self, image_surface, position='bottom-center'):
         """
         """
@@ -670,7 +672,7 @@ class Header(Box):
                 height=80, 
                 margin=20, padding=10,
                 border=1, border_radius=0,
-                border_color=(0,0,0),
+                border_color=(133,133,133),
                 content=None,
                 content_color=(255,255,255),
                 content_position='center',
@@ -691,13 +693,64 @@ class Header(Box):
                 content_position, color,
                 interactable)
 
+        
+        d = datetime.fromtimestamp(time.time())
+        self.box = Box(x=0, y=0, 
+                        width=200, height=80,
+                        position='top-left', 
+                        margin=20, padding=10, 
+                        border=1, border_radius=10, 
+                        border_color=border_color, 
+                        content=None, 
+                        content_color=(255,255,255), 
+                        content_position='center',
+                        color=color, 
+                        parent=self,
+                        interactable=True)
+        self.location = Box(x=10, y=10, 
+                        width=200, height=40,
+                        position='top-center', 
+                        margin=20, padding=10, 
+                        border=0, border_radius=10, 
+                        border_color=None, 
+                        content=locator('Newcastle'), 
+                        content_color=(255,255,255), 
+                        content_position='center',
+                        color=color, 
+                        parent=self.box,
+                        interactable=False)
+        self.date = Box(x=10, y=10, 
+                        width=200, height=40,
+                        position='bottom-center',
+                        margin=20, padding=10, 
+                        border=0, border_radius=10, 
+                        border_color=None, 
+                        content=f'{d.day}/{d.month}/{d.year}  {d.hour}:{d.minute}:{d.second}', 
+                        content_color=(255,255,255), 
+                        content_position='center',
+                        color=color,
+                        parent=self.box, 
+                        interactable=False)
+
+    def position_content(self):
+        d = datetime.fromtimestamp(time.time())
+        if hasattr(self, 'date'):
+            self.date.content = d.strftime('%d/%m/%y  %H:%M:%S')
+            self.date.position_content()
+        Box.position_content(self)
+
     def draw(self, screen):
+        self.position_content()
         width = screen.get_rect().width 
         if self.width != width:
             self.width = width 
             self.rect = (self.x, self.y, self.width, self.height)
             self.position_box()
         Box.draw(self, screen)
+        self.box.draw(screen)
+        self.date.draw(screen)
+        self.location.draw(screen)
+
 
 class Footer(Box):
     def __init__(self,parent=None, 
