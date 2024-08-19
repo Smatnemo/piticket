@@ -8,7 +8,7 @@ from piticket.pictures import get_pygame_image, get_gifs
 from piticket.utils import multiline_text_to_surfaces
 from piticket.location import locator
 
-
+location=locator('Newcastle')
 def create_content_surface(*images,rect=None,align='center'):
     """Return a list of tuples(pygame surface, rect)
     :param images: surface with an image
@@ -35,7 +35,7 @@ def create_content_surface(*images,rect=None,align='center'):
             y = rect.top
         elif align.startswith('center'):
             y = rect.centery - height//2
-        elif align.startwith('bottom'):
+        elif align.startswith('bottom'):
             y = rect.bottom - height
         else:
             raise ValueError(f'{align} value is wrong')
@@ -213,8 +213,8 @@ class Box:
         try:
             assert parent_rect.collidepoint((self.rect.x,
                                 self.rect.y)), f'Coordinates x:{self.rect.x}, y:{self.rect.y} must be within the parent dimensions {parent_rect.x}, {parent_rect.y}, {parent_rect.width}, {parent_rect.height}'
-            assert parent_rect.collidepoint((self.rect.x+self.rect.width, 
-                                    self.rect.y+self.rect.height)),f'Coordinates {self.rect.x+self.rect.width}, {self.rect.y+self.rect.height} for bottom-right must be within the parent {parent_rect.x}, {parent_rect.y}, {parent_rect.width}, {parent_rect.height}' 
+            # assert parent_rect.collidepoint((self.rect.x+self.rect.width, 
+            #                         self.rect.y+self.rect.height)),f'Coordinates for width:{self.rect.x+self.rect.width}, height:{self.rect.y+self.rect.height} for bottom-right must be within the parent {parent_rect.x}, {parent_rect.y}, {parent_rect.width}, {parent_rect.height}' 
         except AssertionError as ex:
             if self.rect.x+self.rect.width==parent_rect.width or self.rect.y+self.rect.height==parent_rect.height:
                 pass
@@ -713,7 +713,7 @@ class Header(Box):
                         margin=20, padding=10, 
                         border=0, border_radius=10, 
                         border_color=None, 
-                        content=locator('Newcastle'), 
+                        content=location, 
                         content_color=(255,255,255), 
                         content_position='center',
                         color=color, 

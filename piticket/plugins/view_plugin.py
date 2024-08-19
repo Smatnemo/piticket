@@ -32,7 +32,8 @@ class ViewPlugin():
     @hookimpl 
     def state_choose_do(self,app,win,events):
         """"""
-        win.show_choice()
+        event = app.find_button_event(events)
+        win.show_choice(event)
         if int(self.screen_lock_timer.remaining())==self.timeout:
             win.show_popup_box('choose',self.timeout,app)
 

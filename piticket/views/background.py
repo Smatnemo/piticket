@@ -2,7 +2,7 @@ import pygame
 from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
 from piticket.pictures import get_filename
-from piticket.views.box import Header, Footer, RightSideBar, LeftSideBar
+from piticket.views.box import Box, Header, Footer, RightSideBar, LeftSideBar, Button
 
 
 class Background():
@@ -38,13 +38,22 @@ class Background():
 
         self._rect = None
 
-        self._header = None
+        self._header = Header(parent=surface, height=160, 
+                            color=(0, 106, 78), border_color=(0, 106, 78),
+                            padding=0, margin=25,
+                            content=get_filename('nrc.jpg'), 
+                            content_position='top-right')
+        self._left_sidebar = LeftSideBar(parent=surface, width=160, 
+                            margin=25, color=(208, 240, 192), 
+                            border_color=(208, 240, 192))
+
         self._footer = None
-        self._left_sidebar = None
         self._right_sidebar = None
         self._popup_box = None
 
         self._need_update = None
+
+        self.event = None
 
     def __str__(self):
         return "{}-{}".format(self._name, self.__class__.__name__)
@@ -53,7 +62,7 @@ class Background():
         if not event:
             return 
         if event:
-            self._need_update = event
+            self.event = event
 
     def _write_texts(self, text, rect=None):
         """Create text surfaces to draw on window surface.
@@ -79,6 +88,10 @@ class Background():
         assert len(color_or_path) == 3, "Length of 3 is required (RGB tuple)"
         self._bg_color = color_or_path
 
+    def get_color(self):
+        """Get background color (RGB tuple)"""
+        return self._bg_color
+
     def set_text_color(self, color):
         """"""
         assert len(color) == 3, "Length of 3 is required (RGB tuple)"
@@ -97,7 +110,8 @@ class Background():
         if self._rect != screen.get_rect():
             self._rect = screen.get_rect()
 
-        self.resize_texts()
+            self.resize_texts()
+            self._need_update = True
 
     def paint(self, screen):
         screen.fill(self._bg_color)
@@ -118,8 +132,8 @@ class IntroBackground(Background):
         Background.__init__(self, 'intro', surface=surface)
 
 class VideoBackground(Background):
-    def __init__(self, path):
-        Background.__init__(self, path)
+    def __init__(self, path, surface):
+        Background.__init__(self, path, surface=surface)
         self.video = VideoPygame(self._name)
 
     def paint(self, screen):
@@ -127,13 +141,91 @@ class VideoBackground(Background):
 
 class ChooseBackground(Background):
     def __init__(self, surface):
-        Background.__init__(self, 'choose', surface=surface) 
-        self._header = Header(parent=surface, height=160, 
-                            color=(0, 106, 78), border_color=(0, 106, 78),
-                            padding=0, content=get_filename('nrc.jpg'), 
-                            content_position='top-right')
-        self._left_sidebar = LeftSideBar(parent=surface, width=120, color=(208, 240, 192), border_color=(208, 240, 192))
-    
+        Background.__init__(self, 'choose', surface=surface)
+        # position of title and options
+        x = self._left_sidebar.width + self._left_sidebar.margin
+        y = self._header.height + self._header.margin
+        width = surface.get_rect().width-self._left_sidebar.width-self._left_sidebar.margin
+        self.title = Box(parent=surface,
+                        x=x, y=y, width=width,
+                        height=60, padding=10,
+                        margin=0,
+                        border=0,
+                        border_radius=0,
+                        border_color=None, 
+                        content='Welcome, touch screen to continue',
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=None,
+                        interactable=False)
+        # change y for buttons
+        y = y+self.title.height
+        self.options = Box(parent=surface,
+                        x=x, y=y, width=width,
+                        height=160, padding=10,
+                        margin=20,
+                        border=0,
+                        border_radius=0,
+                        border_color=None, 
+                        content=None,
+                        content_color=None,
+                        content_position=None,
+                        color=self.get_color(),
+                        position=None,
+                        interactable=False)
+        # Add all these buttons to options attribute
+        self.recharge_card = Button(parent=self.options, 
+                        x=0, y=0, width=240, 
+                        height=160, padding=0,
+                        content=get_filename('mastercard.png'),
+                        content_position='center',
+                        position='top-left')
+        self.all_travels = Button(parent=self.options, 
+                        x=0, y=0, width=240, 
+                        height=160, padding=0,
+                        content=get_filename('mastercard.png'),
+                        content_position='center',
+                        position='center')
+        self.collect_ticket = Button(parent=self.options, 
+                        x=0, y=0, width=240, 
+                        height=160, padding=0,
+                        content=get_filename('mastercard.png'),
+                        content_position='center',
+                        position='top-right') 
+        
+        # Add title below the buttons
+        x = x
+        y = y + self.options.rect.height + self.options.margin
+        self.second_title = Box(parent=surface,
+                        x=x, y=y, width=surface.get_rect().width-self._left_sidebar.width-50,
+                        height=60, padding=10,
+                        margin=0,
+                        border=0,
+                        border_radius=0,
+                        border_color=None, 
+                        content='Quick ticket selections for popular destinations',
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=None,
+                        interactable=False)
+        # Add these buttons below the above buttons
+        # self.travel_locations = RowView()
+
+    def paint(self,screen):
+        Background.paint(self,screen)
+        if self.title:
+            self.title.draw(screen)
+        if self.recharge_card:
+            self.recharge_card.update(self.event, screen)
+        if self.all_travels:
+            self.all_travels.update(self.event, screen)
+        if self.collect_ticket:
+            self.collect_ticket.update(self.event, screen)
+        if self.second_title:
+            self.second_title.draw(screen)
+        
         
 class ChosenBackground(Background):
     def __init__(self, surface):

@@ -2,6 +2,7 @@ import pygame
 import os
 
 from piticket.views import background
+from piticket.utils import LOGGER
 from piticket.views.box import PopUpBox, PopUpBoxProcessing
 
 class PiWindow():
@@ -12,7 +13,7 @@ class PiWindow():
     def __init__(self, title,
                 bg_color=(255,255,255),
                 text_color=(255,255,255),
-                size=(1200, 900)):
+                size=(1280, 1080)):
 
         self.bg_color = bg_color 
         self.__size = size
@@ -51,15 +52,15 @@ class PiWindow():
         """
         video = '/home/pi/Videos/big_buck_bunny_1080p_stereo.avi'
         if os.path.isfile(video):
-            self._update_background(background.VideoBackground(video))
+            self._update_background(background.VideoBackground(video, self.surface))
         else:
             self._update_background(background.IntroBackground(self.surface))
 
-    def show_choice(self, selected=None):
+    def show_choice(self, event, selected=None):
         if not selected:
-            self._update_background(background.ChooseBackground(self.surface))
+            self._update_background(background.ChooseBackground(self.surface), event)
         else:
-            self._update_background(background.ChosenBackground(self.surface))
+            self._update_background(background.ChosenBackground(self.surface), event)
 
     def show_popup_box(self, state_name, timeout, app):
         """Show a pop up box on any state.
@@ -76,7 +77,7 @@ class PiWindow():
         # End pop up box when No button is clicked and return to wait state
         self._popup_box.btn2.clicked(app.post_event, 'wait')
         # End pop up box after timeout duration
-        self._popup_box.triggered(print_func, 'Triggered at the end of PopUp')
+        self._popup_box.triggered(LOGGER.info, 'Triggered at the end of PopUp')
 
         while self._popup_box.started:
             events = pygame.event.get()
@@ -91,8 +92,3 @@ class PiWindow():
         """
         self.current_background = None 
         self.backgrounds = {}
-
-# To end pop up box, set _started = False 
-# To change state, use pygame.MOUSEBUTTONUP with custom attribute of state name
-def print_func(*arg):
-    print(*arg)
