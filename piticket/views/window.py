@@ -13,7 +13,7 @@ class PiWindow():
     def __init__(self, title,
                 bg_color=(255,255,255),
                 text_color=(255,255,255),
-                size=(1280, 1080)):
+                size=(1280, 1000)):
 
         self.bg_color = bg_color 
         self.__size = size
@@ -26,7 +26,7 @@ class PiWindow():
         # Get info of the screen using pygame
         display_info = pygame.display.Info()
         self.display_size = (display_info.current_w, display_info.current_h)
-
+        
         # initialize display
         pygame.display.set_caption(title)
         self.is_fullscreen = False
@@ -71,7 +71,7 @@ class PiWindow():
         :param app: the main pi application 
         :type app: PiApplication
         """
-        self._popup_box = PopUpBox(parent=self.surface, timeout=timeout)
+        self._popup_box = PopUpBox(parent=self.surface, content_color=(127,127,127), color=self.bg_color, timeout=timeout)
         # End pop up box when Yes button is clicked and return to to same state
         self._popup_box.btn1.clicked(app.post_event, state_name)
         # End pop up box when No button is clicked and return to wait state

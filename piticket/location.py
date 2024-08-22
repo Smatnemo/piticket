@@ -4,6 +4,8 @@ from pprint import pprint
 # from piticket import project_name
 states = ['Lagos','Abuja FCT', 'Kaduna']
 
+
+
 def locator(city='',latlong=()):
     geolocator = Geolocator(user_agent='piticket')
     geocode = partial(geolocator.geocode, language='en')
@@ -18,3 +20,6 @@ def locator(city='',latlong=()):
 class Geolocator(Nominatim):
     def __init__(self,user_agent):
         Nominatim.__init__(self,user_agent=user_agent)
+
+
+location = locator('Lagos')

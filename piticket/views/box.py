@@ -6,9 +6,8 @@ from PIL import Image
 from datetime import datetime
 from piticket.pictures import get_pygame_image, get_gifs
 from piticket.utils import multiline_text_to_surfaces
-from piticket.location import locator
+from piticket.location import location
 
-location=locator('Newcastle')
 def create_content_surface(*images,rect=None,align='center'):
     """Return a list of tuples(pygame surface, rect)
     :param images: surface with an image
@@ -122,9 +121,13 @@ class Box:
         self._released = False 
         self._hovered = False
 
+        self._specific_initialization()
         # if box has parent and position set, change the position of the box based on value of position
         self.position_box()
-    
+        
+    def _specific_initialization(self):
+        pass
+        
     @property
     def parent(self):
         return self._parent
@@ -178,6 +181,9 @@ class Box:
 
     def get_rect(self):
         return self.rect 
+    
+    def get_color(self):
+        return self.color
 
     def get_at(self, pixel_coord):
         if isinstance(pixel_coord,(tuple,list)):
@@ -222,26 +228,34 @@ class Box:
                 raise AssertionError(ex)
         self.position_content()
 
-    def position_content(self):
-        """Position content within Box. Possible align values are in self.POSITIONS
+    def position_content(self, content=None, rect=None, align=None):
+        """Position content within rect if it is passed or within Box. Possible align values are in self.POSITIONS
             and class attributes.
         """
+        if rect is None:
+            rect = self.rect 
+        if align is None:
+            align = self.content_position
         # Maximum padding value should not be greater that min(width, height)//2 as ensured in the padding setter
         if self.padding:
-            rect = self.rect.inflate(-2*self.padding, -2*self.padding)
+            rect = rect.inflate(-2*self.padding, -2*self.padding)
         elif not self.padding:
-            rect = self.rect
+            rect = rect
         else:
             return
-        if self.content:
-            if not osp.isfile(self.content):
-                self.content_surfaces = multiline_text_to_surfaces(self.content, 
+        if not content:
+            content = self.content
+        if content:
+            if not osp.isfile(content):
+                self.content_surfaces = multiline_text_to_surfaces(content, 
                                                             self.content_color, 
                                                             rect, 
-                                                            align=self.content_position)
+                                                            align=align)
             else:
-                surface = get_pygame_image(self.content, size=(rect.width, rect.height), color=None)
-                self.content_surfaces = create_content_surface(surface,rect=rect,align=self.content_position)
+                surface = get_pygame_image(content, size=(rect.width, rect.height), color=None)
+                self.content_surfaces = create_content_surface(surface,rect=rect,align=align)
+        # sub classes will use returned value if there are several contents to deal with
+        return self.content_surfaces
 
     def _draw_text(self, screen):
         # By default, content surface must always be in the center of the box

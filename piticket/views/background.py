@@ -3,6 +3,7 @@ from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
 from piticket.pictures import get_filename
 from piticket.views.box import Box, Header, Footer, RightSideBar, LeftSideBar, Button
+from piticket.views.row import RowView
 
 
 class Background():
@@ -49,7 +50,6 @@ class Background():
 
         self._footer = None
         self._right_sidebar = None
-        self._popup_box = None
 
         self._need_update = None
 
@@ -145,7 +145,7 @@ class ChooseBackground(Background):
         # position of title and options
         x = self._left_sidebar.width + self._left_sidebar.margin
         y = self._header.height + self._header.margin
-        width = surface.get_rect().width-self._left_sidebar.width-self._left_sidebar.margin
+        width = surface.get_rect().width-2*self._left_sidebar.width-self._left_sidebar.margin
         self.title = Box(parent=surface,
                         x=x, y=y, width=width,
                         height=60, padding=10,
@@ -198,8 +198,8 @@ class ChooseBackground(Background):
         x = x
         y = y + self.options.rect.height + self.options.margin
         self.second_title = Box(parent=surface,
-                        x=x, y=y, width=surface.get_rect().width-self._left_sidebar.width-50,
-                        height=60, padding=10,
+                        x=x, y=y, width=width,
+                        height=50, padding=10,
                         margin=0,
                         border=0,
                         border_radius=0,
@@ -210,8 +210,60 @@ class ChooseBackground(Background):
                         color=self.get_color(),
                         position=None,
                         interactable=False)
-        # Add these buttons below the above buttons
-        # self.travel_locations = RowView()
+        # This box holds two views with the content dynamically generated
+        height=surface.get_rect().height - (self._header.height + self.title.height + self.options.height + self.second_title.height + 50)
+        
+        self.travel_box_options = Box(parent=surface,
+                        x=x, y=y+self.second_title.height, width=width,
+                        height=height, padding=10,
+                        margin=0,
+                        border=2,
+                        border_radius=0,
+                        border_color=(0,0,0), 
+                        content=None,
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=None,
+                        interactable=False)
+        # print('travel_box_height', self.travel_box_options.height)
+        # print('travel_box_width', self.travel_box_options.width)
+        # print('screen height: ', surface.get_rect().height)
+        # exit()
+        # split options into two views under travel box options
+        # height = height - 5*self.travel_box_options.padding
+        
+        self.left_options = RowView(parent=self.travel_box_options,
+                        x=0, y=0, width=width//2,
+                        height=height, padding=20,
+                        margin=30,
+                        border=2,
+                        border_radius=0,
+                        border_color=self.get_color(), 
+                        content=None,
+                        content_color=self._header.get_color(),
+                        content_position='top-left',
+                        color=self.get_color(),
+                        position='top-left',
+                        interactable=False)
+        self.right_options = RowView(parent=self.travel_box_options,
+                        x=0, y=0, width=width//2,
+                        height=height, padding=20,
+                        margin=30,
+                        border=2,
+                        border_radius=0,
+                        border_color=self.get_color(), 
+                        content=None,
+                        content_color=self._header.get_color(),
+                        content_position='top-right',
+                        color=self.get_color(),
+                        position='top-right',
+                        interactable=False)
+
+        # print('left_options_height', self.left_options.height)
+        # print('left_options_width', self.left_options.width)
+        # print('right_options_height', self.right_options.height)
+        # print('right_options_width', self.right_options.width)
 
     def paint(self,screen):
         Background.paint(self,screen)
@@ -225,6 +277,12 @@ class ChooseBackground(Background):
             self.collect_ticket.update(self.event, screen)
         if self.second_title:
             self.second_title.draw(screen)
+        if self.travel_box_options:
+            self.travel_box_options.draw(screen)
+        if self.left_options:
+            self.left_options.update(self.event,screen)
+        if self.right_options:
+            self.right_options.update(self.event,screen)
         
         
 class ChosenBackground(Background):

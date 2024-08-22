@@ -34,8 +34,12 @@ class ViewPlugin():
         """"""
         event = app.find_button_event(events)
         win.show_choice(event)
-        if int(self.screen_lock_timer.remaining())==self.timeout:
+        if event:
+            # Reset timer if cursor is active
+            self.screen_lock_timer.start()
+        if int(self.screen_lock_timer.remaining())==self.timeout and not events:
             win.show_popup_box('choose',self.timeout,app)
+        
 
     @hookimpl
     def state_choose_validate(self,app,win,events):
@@ -46,6 +50,8 @@ class ViewPlugin():
                 return 'choose'
             if change_event.state=='wait':
                 return 'wait'
+            if change_event.state=='chosen':
+                return 'chosen'
         if self.screen_lock_timer.is_timeout():
             return 'wait'
         
@@ -60,7 +66,8 @@ class ViewPlugin():
     @hookimpl 
     def state_chosen_do(self,app,win,events):
         """"""
-        win.show_choice()
+        event = app.find_button_event(events)
+        win.show_choice(event,selected=True)
 
     @hookimpl 
     def state_chosen_validate(self,app,win,events):
