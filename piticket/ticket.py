@@ -1,6 +1,8 @@
 import multiprocessing
 import pygame
 import sys
+import tempfile
+import logging
 
 import os.path as osp
 
@@ -102,7 +104,9 @@ def main():
     if hasattr(multiprocessing, 'set_start_method'):
         # Avoid use 'fork': safely forking a multithreaded process is problematic
         multiprocessing.set_start_method('spawn')
-    configure_logging(msgfmt='[ %(levelname)-8s] %(name)-18s: %(message)s', filename='/tmp/piticket/piticket.log')
+
+    filename = osp.join(tempfile.gettempdir(),'piticket.log')
+    configure_logging(logging.INFO, msgfmt='[ %(levelname)-8s] %(name)-18s: %(message)s', filename=filename)
 
     pm = create_plugin_manager(project_name)
     pm.load_all_plugins(paths=[],disabled=[])

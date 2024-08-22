@@ -1,3 +1,5 @@
+
+import pygame
 from piticket import project_name 
 from piticket import hookimpl 
 from piticket.utils import PoolingTimer
@@ -6,7 +8,7 @@ class ViewPlugin():
     name = f'{project_name}-core:view'
     def __init__(self,plugin_manager):
         self.pm = plugin_manager 
-        self.screen_lock_timer = PoolingTimer(30)
+        self.screen_lock_timer = PoolingTimer(60)
         # Default time for pop up box
         self.timeout = 10
 
@@ -33,14 +35,13 @@ class ViewPlugin():
     def state_choose_do(self,app,win,events):
         """"""
         event = app.find_button_event(events)
-        win.show_choice(event)
+        win.show_choice(event, tickets=travels)
         if event:
             # Reset timer if cursor is active
             self.screen_lock_timer.start()
         if int(self.screen_lock_timer.remaining())==self.timeout and not events:
             win.show_popup_box('choose',self.timeout,app)
         
-
     @hookimpl
     def state_choose_validate(self,app,win,events):
         # Find event for next state
@@ -58,22 +59,36 @@ class ViewPlugin():
     @hookimpl 
     def state_choose_exit(self,app,win):
         """"""
+        # Clear event list before next cycle
 
     @hookimpl 
     def state_chosen_enter(self,app,win):
         """"""
+        self.screen_lock_timer.start()
 
     @hookimpl 
     def state_chosen_do(self,app,win,events):
         """"""
         event = app.find_button_event(events)
-        win.show_choice(event,selected=True)
+        win.show_choice(event,tickets=travels,selected=('Nasarawa','₦10,000','Standard off-peak day return'))
+        if event:
+            # Reset timer if cursor is active
+            self.screen_lock_timer.start()
+        if int(self.screen_lock_timer.remaining())==self.timeout and not events:
+            win.show_popup_box('chosen',self.timeout,app)
 
     @hookimpl 
     def state_chosen_validate(self,app,win,events):
-        event = app.find_change_event(events)
-        if event:
-            return 'pay'
+        change_event = app.find_change_event(events)
+        if change_event:
+            if change_event.state=='pay':
+                return 'pay'
+            if change_event.state=='wait':
+                return 'wait'
+            if change_event.state=='choose':
+                return 'choose'
+        if self.screen_lock_timer.is_timeout():
+            return 'wait'
 
     @hookimpl 
     def state_chosen_exit(self,app,win):
@@ -97,3 +112,13 @@ class ViewPlugin():
     @hookimpl 
     def state_pay_exit(self,app,win):
         """"""
+
+# The Symbol for Naira alt Code is 8358.
+# Naira symbol not showing in render
+# Dummy data for RowView
+travels = {('Nasarawa','₦10,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'09:18','route':'ANY PERMITTED','price':'10,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'1'}},
+('Kaduna','₦20,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'10:18','route':'ANY PERMITTED','price':'20,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'0'}},
+('Niger','₦15,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'12:18','route':'ANY PERMITTED','price':'15,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'2'}},
+('Kogi','₦30,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'13:50','route':'ANY PERMITTED','price':'30,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'3','children (5-15)':'0'}},
+('Lagos','₦12,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'15:60','route':'ANY PERMITTED','price':'12,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'3'}}}
+# For choose state and quick display use destination, type, price

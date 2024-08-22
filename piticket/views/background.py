@@ -47,6 +47,31 @@ class Background():
         self._left_sidebar = LeftSideBar(parent=surface, width=160, 
                             margin=25, color=(208, 240, 192), 
                             border_color=(208, 240, 192))
+        self.side_bar_top = Box(parent=self._left_sidebar,
+                                x=0, y=160, width=self._left_sidebar.width,
+                                height=160, padding=10, margin=20,
+                                border=0, border_radius=0,
+                                border_color=(255,255,0), content=None,
+                                content_color=None, content_position=None,
+                                color=self._left_sidebar.get_color(),
+                                position=None, interactable=False)
+        self.side_bar_center = Box(parent=self._left_sidebar,
+                                x=0, y=160, width=self._left_sidebar.width,
+                                height=240, padding=10, margin=20,
+                                border=0, border_radius=0,
+                                border_color=(255,255,0), content=None,
+                                content_color=None, content_position=None,
+                                color=self._left_sidebar.get_color(),
+                                position=Box.CENTER, interactable=False)
+        self.side_bar_bottom = Box(parent=self._left_sidebar,
+                                x=0, y=0, width=self._left_sidebar.width,
+                                height=160, padding=10, margin=20,
+                                border=0, border_radius=0,
+                                border_color=(255,255,0), content=None,
+                                content_color=None, content_position=None,
+                                color=self._left_sidebar.get_color(),
+                                position=Box.BOTTOMLEFT,
+                                interactable=False)
 
         self._footer = None
         self._right_sidebar = None
@@ -59,10 +84,7 @@ class Background():
         return "{}-{}".format(self._name, self.__class__.__name__)
 
     def handle_events(self, event=None):
-        if not event:
-            return 
-        if event:
-            self.event = event
+        self.event = event
 
     def _write_texts(self, text, rect=None):
         """Create text surfaces to draw on window surface.
@@ -121,6 +143,12 @@ class Background():
             self._right_sidebar.draw(screen)
         if self._left_sidebar:
             self._left_sidebar.draw(screen)
+        if self.side_bar_top:
+            self.side_bar_top.draw(screen)
+        if self.side_bar_center:
+            self.side_bar_center.draw(screen)
+        if self.side_bar_bottom:
+            self.side_bar_bottom.draw(screen)
         if self._footer:
             self._footer.draw(screen)
         if self._header:
@@ -140,7 +168,7 @@ class VideoBackground(Background):
         self.video.preview(screen)
 
 class ChooseBackground(Background):
-    def __init__(self, surface):
+    def __init__(self, tickets, surface):
         Background.__init__(self, 'choose', surface=surface)
         # position of title and options
         x = self._left_sidebar.width + self._left_sidebar.margin
@@ -177,21 +205,24 @@ class ChooseBackground(Background):
         # Add all these buttons to options attribute
         self.recharge_card = Button(parent=self.options, 
                         x=0, y=0, width=240, 
-                        height=160, padding=0,
+                        height=160, padding=0, border=0,
                         content=get_filename('mastercard.png'),
                         content_position='center',
+                        color=self.get_color(),
                         position='top-left')
         self.all_travels = Button(parent=self.options, 
                         x=0, y=0, width=240, 
-                        height=160, padding=0,
+                        height=160, padding=0, border=0,
                         content=get_filename('mastercard.png'),
                         content_position='center',
+                        color=self.get_color(),
                         position='center')
         self.collect_ticket = Button(parent=self.options, 
                         x=0, y=0, width=240, 
-                        height=160, padding=0,
+                        height=160, padding=0, border=0,
                         content=get_filename('mastercard.png'),
                         content_position='center',
+                        color=self.get_color(),
                         position='top-right') 
         
         # Add title below the buttons
@@ -210,9 +241,9 @@ class ChooseBackground(Background):
                         color=self.get_color(),
                         position=None,
                         interactable=False)
+
         # This box holds two views with the content dynamically generated
         height=surface.get_rect().height - (self._header.height + self.title.height + self.options.height + self.second_title.height + 50)
-        
         self.travel_box_options = Box(parent=surface,
                         x=x, y=y+self.second_title.height, width=width,
                         height=height, padding=10,
@@ -226,13 +257,8 @@ class ChooseBackground(Background):
                         color=self.get_color(),
                         position=None,
                         interactable=False)
-        # print('travel_box_height', self.travel_box_options.height)
-        # print('travel_box_width', self.travel_box_options.width)
-        # print('screen height: ', surface.get_rect().height)
-        # exit()
         # split options into two views under travel box options
         # height = height - 5*self.travel_box_options.padding
-        
         self.left_options = RowView(parent=self.travel_box_options,
                         x=0, y=0, width=width//2,
                         height=height, padding=20,
@@ -245,7 +271,8 @@ class ChooseBackground(Background):
                         content_position='top-left',
                         color=self.get_color(),
                         position='top-left',
-                        interactable=False)
+                        interactable=False,
+                        rows=tickets)
         self.right_options = RowView(parent=self.travel_box_options,
                         x=0, y=0, width=width//2,
                         height=height, padding=20,
@@ -258,12 +285,51 @@ class ChooseBackground(Background):
                         content_position='top-right',
                         color=self.get_color(),
                         position='top-right',
+                        interactable=False,
+                        rows=tickets)
+        # Create options for the side bar
+        # Show that card payment is available
+        self.card_text = Box(parent=self.side_bar_top,
+                        x=0, y=0, width=120,
+                        height=40, padding=0,
+                        margin=0,
+                        border=0,
+                        border_radius=0,
+                        border_color=None, 
+                        content="Card Payment Only",
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.side_bar_top.get_color(),
+                        position=Box.TOPCENTER,
                         interactable=False)
+        self.card_payment = Box(parent=self.side_bar_top,
+                        x=0, y=0, width=150,
+                        height=100, padding=0,
+                        margin=0,
+                        border=0,
+                        border_radius=0,
+                        border_color=None, 
+                        content=get_filename('mastercard.png'),
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.side_bar_top.get_color(),
+                        position=Box.CENTER,
+                        interactable=False)
+        self.translations = Button(parent=self.side_bar_center, 
+                        x=0, y=0, width=150, 
+                        height=100, padding=0, border=0,
+                        content=get_filename('mastercard.png'),
+                        content_position='center',
+                        color=self.side_bar_center.get_color(),
+                        position=Box.CENTER)
 
-        # print('left_options_height', self.left_options.height)
-        # print('left_options_width', self.left_options.width)
-        # print('right_options_height', self.right_options.height)
-        # print('right_options_width', self.right_options.width)
+        self.future_tickets = Button(parent=self.side_bar_bottom, 
+                        x=0, y=0, width=150, 
+                        height=100, padding=20, border=0,
+                        content='Tickets for\nfuture\ntravel',
+                        content_position='center',
+                        color=self._header.get_color(),
+                        position=Box.TOPCENTER)
 
     def paint(self,screen):
         Background.paint(self,screen)
@@ -283,8 +349,40 @@ class ChooseBackground(Background):
             self.left_options.update(self.event,screen)
         if self.right_options:
             self.right_options.update(self.event,screen)
+        if self.card_text:
+            self.card_text.draw(screen)
+        if self.card_payment:
+            self.card_payment.draw(screen)
+        if self.translations:
+            self.translations.update(self.event, screen)
+        if self.future_tickets:
+            self.future_tickets.update(self.event, screen)
         
         
 class ChosenBackground(Background):
-    def __init__(self, surface):
+    def __init__(self, chosen_ticket, surface):
         Background.__init__(self, 'chosen', surface=surface)
+        self.chosen_ticket = chosen_ticket
+        self.back_button = Button(parent=self.side_bar_bottom, 
+                        x=0, y=0, width=120, 
+                        height=60, padding=20,
+                        content='Back',
+                        content_position='center',
+                        color=self._header.get_color(),
+                        position='top-center')
+        self.back_button.clicked(pygame.event.post, (pygame.event.Event(pygame.MOUSEBUTTONUP,state='choose')))
+        self.cancel_button = Button(parent=self.side_bar_bottom, 
+                        x=0, y=0, width=120, 
+                        height=60, padding=20,
+                        content='Cancel',
+                        content_position='center',
+                        color=(255,0,0),
+                        position='bottom-center')
+        self.cancel_button.clicked(pygame.event.post, (pygame.event.Event(pygame.MOUSEBUTTONUP,state='wait')))
+        
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.cancel_button:
+            self.cancel_button.update(self.event, screen)
+        if self.back_button:
+            self.back_button.update(self.event, screen)

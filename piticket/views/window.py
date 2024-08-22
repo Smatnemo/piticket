@@ -56,11 +56,19 @@ class PiWindow():
         else:
             self._update_background(background.IntroBackground(self.surface))
 
-    def show_choice(self, event, selected=None):
+    def show_choice(self, event, tickets={}, selected=None):
+        """Display all choices when nothing is selected
+        :param event: filtered event for button actions
+        :type event: pygame.event.Event
+        :param tickets: ticket information from backoffice
+        :type tickets: dict
+        :param selected: tuple for hashing the dictionary for specific ticket used in Chosen Background
+        :type selected: tuple
+        """
         if not selected:
-            self._update_background(background.ChooseBackground(self.surface), event)
+            self._update_background(background.ChooseBackground(tickets, self.surface), event)
         else:
-            self._update_background(background.ChosenBackground(self.surface), event)
+            self._update_background(background.ChosenBackground(tickets[selected], self.surface), event)
 
     def show_popup_box(self, state_name, timeout, app):
         """Show a pop up box on any state.

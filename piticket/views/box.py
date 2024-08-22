@@ -300,6 +300,9 @@ class Box:
         else:
             pass
 
+    def add_box(self, box, **box_config):
+        pass
+
     def clicked(self, func, *args, **kwargs):
         """Save a function to execute when the button is released
         """
