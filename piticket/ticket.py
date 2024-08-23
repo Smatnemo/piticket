@@ -10,10 +10,12 @@ PROJECT_DIR = osp.abspath(osp.dirname(__file__))
 PACKAGE_DIR, project_name = osp.split(PROJECT_DIR)
 sys.path.insert(0, PACKAGE_DIR)
 
+from piticket import language
 from piticket.utils import *
 from piticket.views import PiWindow
 from piticket.states import StatesMachine
 from piticket.plugins import create_plugin_manager
+
 
 class PiApplication():
     def __init__(self, plugin_manager):
@@ -111,6 +113,9 @@ def main():
     pm = create_plugin_manager(project_name)
     pm.load_all_plugins(paths=[],disabled=[])
     
+    # initialize translations system
+    language.init('~/.config/piticket/translations.cfg', True)
+
     app = PiApplication(pm)
     app.main_loop()
 
