@@ -5,21 +5,60 @@ from piticket.utils import LOGGER
 from configparser import ConfigParser
 
 PARSER = ConfigParser()
-CURRENT = 'en'
+CURRENT = 'fr'
 
 DEFAULT = {
         'en':{'choose':'Welcome, touch screen to continue', 
               'chosen':'Your journey details', 
               'recharge':'Please touch your card on the reader',
               'date':'Please select a date for your outward journey',
-              'quick':'Quick selections'},# English
-        'pn':{},# Pidgin English
-        'ig':{},# Igbo
-        'ha':{},# Hausa
-        'ya':{},# Yoruba
-        'ib':{},# Ibibio
-        'ij':{},# Ijaw
-        'tv':{}# Tiv
+              'quick':'Quick ticket selection for popular destinations',
+              'card':'Card payment only',
+              'future':'Tickets for\nfuture\ntravel'},# English
+        'fr':{'choose':'Bienvenue, écran tactile pour continuer', 
+              'chosen':'Les détails de votre voyage', 
+              'recharge':'Veuillez toucher votre carte sur le lecteur',
+              'date':'Veuillez sélectionner une date pour votre voyage aller',
+              'quick':'Sélection rapide de billets pour les destinations populaires',
+              'card':'Paiement par carte uniquement',
+              'future':'Billets pour\nde futurs\nvoyages'},# French
+        'pn':{'choose':'Welcome, abeg touch screen to continue', 
+              'chosen':'Your journey details', 
+              'recharge':'Abeg touch your card for the reader',
+              'date':'Abeg select the day wey you want travel',
+              'quick':'Quickly select tickets for popular journey',
+              'card':'Only card payment',
+              'future':'Tickets for\nfuture\njourney'},# Pidgin English
+        # 'ig':{'choose':'', 
+        #       'chosen':'', 
+        #       'recharge':'',
+        #       'date':'',
+        #       'quick':''},# Igbo
+        # 'ha':{'choose':'', 
+        #       'chosen':'', 
+        #       'recharge':'',
+        #       'date':'',
+        #       'quick':''},# Hausa
+        # 'ya':{'choose':'', 
+        #       'chosen':'', 
+        #       'recharge':'',
+        #       'date':'',
+        #       'quick':''},# Yoruba
+        # 'ib':{'choose':'', 
+        #       'chosen':'', 
+        #       'recharge':'',
+        #       'date':'',
+        #       'quick':''},# Ibibio
+        # 'ij':{'choose':'', 
+        #       'chosen':'', 
+        #       'recharge':'',
+        #       'date':'',
+        #       'quick':''},# Ijaw
+        # 'tv':{'choose':'', 
+        #       'chosen':'', 
+        #       'recharge':'',
+        #       'date':'',
+        #       'quick':''}# Tiv
 }
 
 
