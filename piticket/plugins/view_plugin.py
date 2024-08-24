@@ -2,6 +2,7 @@
 import pygame
 from piticket import project_name 
 from piticket import hookimpl 
+from piticket.language import change_language
 from piticket.utils import PoolingTimer
 
 class ViewPlugin():
@@ -47,12 +48,8 @@ class ViewPlugin():
         # Find event for next state
         change_event = app.find_change_event(events)  
         if change_event:
-            if change_event.state=='choose':
-                return 'choose'
-            if change_event.state=='wait':
-                return 'wait'
-            if change_event.state=='chosen':
-                return 'chosen'
+            # Return to either choose, wait, translate, or chosen
+            return change_event.state
         if self.screen_lock_timer.is_timeout():
             return 'wait'
         
@@ -81,18 +78,38 @@ class ViewPlugin():
     def state_chosen_validate(self,app,win,events):
         change_event = app.find_change_event(events)
         if change_event:
-            if change_event.state=='pay':
-                return 'pay'
-            if change_event.state=='wait':
-                return 'wait'
-            if change_event.state=='choose':
-                return 'choose'
+            # Return the state wait, choose, chosen
+            return change_event.state
+
         if self.screen_lock_timer.is_timeout():
             return 'wait'
 
     @hookimpl 
     def state_chosen_exit(self,app,win):
         """"""
+
+    @hookimpl
+    def state_translate_enter(self,app,win):
+        """"""
+
+    @hookimpl 
+    def state_translate_do(self,cfg, app,win,events):
+        """"""
+        event = app.find_button_event(events)
+        win.show_translations(event)
+    @hookimpl
+    def state_translate_validate(self, cfg, app,win,events):
+        """"""
+        change_event = app.find_change_event(events)
+        if change_event:
+            if change_event.state=='translate':
+                change_language(cfg, change_event.lang,  change_event.desc)
+            return change_event.state
+
+    @hookimpl 
+    def state_translate_exit(self,app,win):
+        """"""
+        win.drop_cache()
 
     @hookimpl
     def state_pay_enter(self,app,win):
@@ -112,7 +129,6 @@ class ViewPlugin():
     @hookimpl 
     def state_pay_exit(self,app,win):
         """"""
-
 # The Symbol for Naira alt Code is 8358.
 # Naira symbol not showing in render
 # Dummy data for RowView

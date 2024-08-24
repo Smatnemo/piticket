@@ -244,3 +244,19 @@ def multiline_text_to_surfaces(text, color, rect, align='center'):
         surfaces.append((surface,surface.get_rect(x=x,y=y)))
 
     return surfaces
+
+def open_text_editor(filename):
+    """Open a text editor to edit the configuration file.
+    """
+    editors = ['leafpad', 'mousepad', 'vi', 'emacs']
+    for editor in editors:
+        try:
+            process = subprocess.Popen([editor, filename])
+            process.communicate()
+            return True
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                # Something else went wrong while trying to run the editor
+                raise
+    LOGGER.critical("Can't find installed text editor among %s", editors)
+    return False

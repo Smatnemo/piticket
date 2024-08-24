@@ -2,7 +2,7 @@ import time
 from piticket.utils import BlockConsoleHandler, LOGGER 
 
 class StatesMachine():
-    def __init__(self, plugin_manager, app, window):
+    def __init__(self, plugin_manager, configuration, app, window):
         self.states = set()
         self.active_state = None
         self.failsafe_state = None
@@ -10,6 +10,7 @@ class StatesMachine():
         # Variables shared between states
         self.win = window 
         self.app = app
+        self.cfg = configuration
 
         self._start_time = time.time()
 
@@ -35,10 +36,10 @@ class StatesMachine():
         try:
             # Execute the actions of the active state
             hook = getattr(self.pm.hook, f'state_{self.active_state}_do')
-            hook(app=self.app,win=self.win,events=events)
+            hook(cfg=self.cfg,app=self.app,win=self.win,events=events)
             # Check conditions to move to the next state
             hook = getattr(self.pm.hook, f'state_{self.active_state}_validate')
-            new_state_name = hook(app=self.app,win=self.win,events=events)
+            new_state_name = hook(cfg=self.cfg,app=self.app,win=self.win,events=events)
         except Exception as ex:
             if self.failsafe_state and self.active_state != self.failsafe_state:
                 LOGGER.error(str(ex))
@@ -57,7 +58,7 @@ class StatesMachine():
             # Perform any exit actions or clean up operations
             if self.active_state is not None:
                 hook = getattr(self.pm.hook, f'state_{self.active_state}_exit')
-                hook(app=self.app,win=self.win)
+                hook(cfg=self.cfg,app=self.app,win=self.win)
                 BlockConsoleHandler.dedent()
                 LOGGER.debug("took %0.3f secons", time.time() - self._start_time)
         except Exception as ex:
@@ -78,7 +79,7 @@ class StatesMachine():
 
         try:
             hook = getattr(self.pm.hook, f'state_{self.active_state}_enter')
-            hook(app=self.app,win=self.win)
+            hook(cfg=self.cfg,app=self.app,win=self.win)
         except Exception as ex:
             if self.failsafe_state and self.active_state != self.failsafe_state:
                 LOGGER.error(str(ex))

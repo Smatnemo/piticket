@@ -3,14 +3,11 @@ import io
 import os.path as osp
 
 from configparser import ConfigParser
-from piticket.utils import LOGGER 
-# from piticket.config import PiConfigParser
+from piticket.utils import LOGGER, open_text_editor
 
 PARSER = ConfigParser()
 # Get the current language
-PARSER.read('/home/pi/.config/piticket/piticket.cfg', encoding='utf-8')
-CURRENT = PARSER['LANGUAGE']['CURRENT']
-PARSER.clear()
+CURRENT = 'en'
 
 DEFAULT = {
         'en':{'choose':'Welcome, touch screen to continue', 
@@ -119,16 +116,14 @@ def edit():
         raise EnvironmentError('Translation system is not initialized')
     open_text_editor(PARSER.filename)
 
-def change_language(lang, desc=''):
+def change_language(config, lang, desc=''):
     # Global keyword must be used here because assigning variable automatically makes it a local variable
     global CURRENT
     if lang in get_supported_languages():
         if CURRENT != lang:
-            config = ConfigParser()
-            config.read('/home/pi/.config/piticket/piticket.cfg')
             with io.open('/home/pi/.config/piticket/piticket.cfg', 'w', encoding='utf-8') as fp:
-                config['LANGUAGE']['CURRENT'] = lang
-                config.write(fp)
+                config.set('GENERAL','language',lang)
+                config.save()
             
             CURRENT = lang
             LOGGER.info("Changed language to '%s(%s)'",desc,lang)

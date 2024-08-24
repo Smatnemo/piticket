@@ -14,20 +14,24 @@ from piticket import language
 from piticket.utils import *
 from piticket.views import PiWindow
 from piticket.states import StatesMachine
+from piticket.config import PiConfigParser
 from piticket.plugins import create_plugin_manager
 
 
 class PiApplication():
-    def __init__(self, plugin_manager):
+    def __init__(self, plugin_manager,config):
         self.win = PiWindow('Piticket')
         self._pm = plugin_manager
-        self.states_machine = StatesMachine(self._pm,self,self.win)
+        self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
         self.states_machine.add_state('choose')
+        
         self.states_machine.add_state('chosen')
-        self.states_machine.add_state('pay')
         self.states_machine.add_state('collect')
         self.states_machine.add_state('recharge')
+        self.states_machine.add_state('translate')
+
+        self.states_machine.add_state('pay')
         self.states_machine.add_state('print')
         self.states_machine.add_state('finish')
 
@@ -112,11 +116,15 @@ def main():
 
     pm = create_plugin_manager(project_name)
     pm.load_all_plugins(paths=[],disabled=[])
-    
+    # Create config
+    config = PiConfigParser('/home/pi/.config/piticket/piticket.cfg', pm, True)
+    if not osp.isfile(config.filename):
+        config.save(default=True)
     # initialize translations system
+    language.change_language(config, config.get('GENERAL','language'))
     language.init('~/.config/piticket/translations.cfg', True)
 
-    app = PiApplication(pm)
+    app = PiApplication(pm, config)
     app.main_loop()
 
     
