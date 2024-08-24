@@ -1,8 +1,9 @@
 import pygame 
+from pygame.event import Event, post
 from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
 from piticket.pictures import get_filename
-from piticket.language import get_translated_text
+from piticket.language import get_translated_text, change_language
 from piticket.views.box import Box, Header, Footer, RightSideBar, LeftSideBar, Button
 from piticket.views.row import RowView
 
@@ -48,15 +49,6 @@ class Background():
         self._left_sidebar = LeftSideBar(parent=surface, width=160, 
                             margin=25, color=(208, 240, 192), 
                             border_color=(208, 240, 192))
-         # position of title and options
-        x = self._left_sidebar.width + self._left_sidebar.margin
-        y = self._header.height + self._header.margin
-        width = surface.get_rect().width-2*self._left_sidebar.width-self._left_sidebar.margin
-        self.title = Box(parent=surface, x=x, y=y, width=width,
-                                height=60, padding=10, margin=0, border=0,
-                                border_radius=0, border_color=None, content=get_translated_text(self._name),
-                                content_color=(0,0,0), content_position='center', color=self.get_color(),
-                                position=None, interactable=False)
         self.side_bar_top = Box(parent=self._left_sidebar,
                                 x=0, y=160, width=self._left_sidebar.width,
                                 height=160, padding=10, margin=20,
@@ -82,6 +74,24 @@ class Background():
                                 color=self._left_sidebar.get_color(),
                                 position=Box.BOTTOMLEFT,
                                 interactable=False)
+         # position of title and options
+        x = self._left_sidebar.width + self._left_sidebar.margin
+        y = self._header.height + self._header.margin
+        width = surface.get_rect().width-self._left_sidebar.width
+        self.main_content = Box(parent=surface,
+                                x=0, y=0, width=width,
+                                height=self._left_sidebar.height-160, padding=10, margin=20,
+                                border=2, border_radius=0,
+                                border_color=(255,255,0), content=None,
+                                content_color=None, content_position=None,
+                                color=self.get_color(),
+                                position=Box.BOTTOMRIGHT,
+                                interactable=False)
+        self.title = Box(parent=self.main_content, x=x, y=y, width=width-self._left_sidebar.margin-self._left_sidebar.width,
+                                height=60, padding=10, margin=0, border=0,
+                                border_radius=0, border_color=None, content=get_translated_text(self._name),
+                                content_color=(0,0,0), content_position='center', color=self.get_color(),
+                                position=Box.TOPCENTER, interactable=False)
 
         self._footer = None
         self._right_sidebar = None
@@ -163,6 +173,8 @@ class Background():
             self._footer.draw(screen)
         if self._header:
             self._header.draw(screen)
+        if self.main_content:
+            self.main_content.draw(screen)
         if self.title:
             self.title.draw(screen)
 
@@ -311,6 +323,8 @@ class ChooseBackground(Background):
                         color=self.side_bar_top.get_color(),
                         position=Box.CENTER,
                         interactable=False)
+        
+        # Create button for changing between translations
         self.translations = Button(parent=self.side_bar_center, 
                         x=0, y=0, width=150, 
                         height=100, padding=0, border=0,
@@ -318,7 +332,9 @@ class ChooseBackground(Background):
                         content_position='center',
                         color=self.side_bar_center.get_color(),
                         position=Box.CENTER)
+        self.translations.clicked(post,Event(pygame.MOUSEBUTTONUP,state='translate'))
 
+        # Create button to navigate the calender for future travels
         self.future_tickets = Button(parent=self.side_bar_bottom, 
                         x=0, y=0, width=150, 
                         height=100, padding=20, border=0,
@@ -326,6 +342,7 @@ class ChooseBackground(Background):
                         content_position='center',
                         color=self._header.get_color(),
                         position=Box.TOPCENTER)
+        self.future_tickets.clicked(post,Event(pygame.MOUSEBUTTONUP,state='future_tickets'))
 
     def paint(self,screen):
         Background.paint(self,screen)
@@ -364,7 +381,7 @@ class ChosenBackground(Background):
                         content_position='center',
                         color=self._header.get_color(),
                         position='top-center')
-        self.back_button.clicked(pygame.event.post, (pygame.event.Event(pygame.MOUSEBUTTONUP,state='choose')))
+        self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='choose'))
         self.cancel_button = Button(parent=self.side_bar_bottom, 
                         x=0, y=0, width=120, 
                         height=60, padding=20,
@@ -372,7 +389,7 @@ class ChosenBackground(Background):
                         content_position='center',
                         color=(255,0,0),
                         position='bottom-center')
-        self.cancel_button.clicked(pygame.event.post, (pygame.event.Event(pygame.MOUSEBUTTONUP,state='wait')))
+        self.cancel_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='wait'))
         
     def paint(self, screen):
         Background.paint(self, screen)
@@ -380,3 +397,100 @@ class ChosenBackground(Background):
             self.cancel_button.update(self.event, screen)
         if self.back_button:
             self.back_button.update(self.event, screen)
+
+
+class TranslateBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'translate', surface=surface)
+        self.translations_box = Box(parent=self.main_content,
+                        x=0, y=0, width=540,
+                        height=400, padding=0,
+                        margin=0, border=0,
+                        border_radius=0,
+                        border_color=(255,255,0), 
+                        content=None,
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.CENTER,
+                        interactable=False)
+        self.english_button = Button(parent=self.translations_box, 
+                        x=0, y=0, width=180, 
+                        height=120, padding=2,
+                        border=0,
+                        content=get_filename('ng_flag.jpg'),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.TOPLEFT)
+        self.english_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='translate',lang='en', desc='English'))
+        self.english_text = Box(parent=self.translations_box,
+                        x=0, y=0, width=180,
+                        height=120, padding=20,
+                        margin=0, border=0,
+                        border_radius=0,
+                        border_color=(255,255,0),
+                        content='English',
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.TOPCENTER,
+                        interactable=False)
+        self.french_button = Button(parent=self.translations_box, 
+                        x=0, y=0, width=180, 
+                        height=120, padding=2,
+                        border=0,
+                        content=get_filename('fr_flag.png'),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.CENTERLEFT)
+        self.french_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='translate',lang='fr', desc='French'))
+        self.french_text = Box(parent=self.translations_box,
+                        x=0, y=0, width=180,
+                        height=120, padding=20,
+                        margin=0, border=0,
+                        border_radius=0,
+                        border_color=(255,255,0),
+                        content='French',
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.CENTER,
+                        interactable=False)
+        self.pidgin_button = Button(parent=self.translations_box, 
+                        x=0, y=0, width=180, 
+                        height=120, padding=2,
+                        border=0,
+                        content=get_filename('pidgin.jpg'),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.BOTTOMLEFT)
+        self.pidgin_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='translate',lang='pn', desc='Pidgin'))
+        self.pidgin_text = Box(parent=self.translations_box,
+                        x=0, y=0, width=180,
+                        height=120, padding=20,
+                        margin=0, border=0,
+                        border_radius=0,
+                        border_color=(255,255,0),
+                        content='Pidgin',
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.get_color(),
+                        position=Box.BOTTOMCENTER,
+                        interactable=False)
+
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.translations_box:
+            self.translations_box.draw(screen)
+        if self.english_button:
+            self.english_button.update(self.event, screen)
+        if self.english_text:
+            self.english_text.draw(screen)
+        if self.french_button:
+            self.french_button.update(self.event, screen)
+        if self.french_text:
+            self.french_text.draw(screen)
+        if self.pidgin_button:
+            self.pidgin_button.update(self.event, screen)
+        if self.pidgin_text:
+            self.pidgin_text.draw(screen)

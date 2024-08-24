@@ -70,6 +70,13 @@ class PiWindow():
         else:
             self._update_background(background.ChosenBackground(tickets[selected], self.surface), event)
 
+    def show_translations(self, event):
+        """Display a list of available translations. Choose a language
+        :param event: event for button effects
+        :type event: pygame.event.Event
+        """
+        self._update_background(background.TranslateBackground(self.surface), event)
+
     def show_popup_box(self, state_name, timeout, app):
         """Show a pop up box on any state.
         :param state_name: the name of the state calling the pop up box
