@@ -1,11 +1,16 @@
 import os
 import io
 import os.path as osp
-from piticket.utils import LOGGER 
+
 from configparser import ConfigParser
+from piticket.utils import LOGGER 
+# from piticket.config import PiConfigParser
 
 PARSER = ConfigParser()
-CURRENT = 'fr'
+# Get the current language
+PARSER.read('/home/pi/.config/piticket/piticket.cfg', encoding='utf-8')
+CURRENT = PARSER['LANGUAGE']['CURRENT']
+PARSER.clear()
 
 DEFAULT = {
         'en':{'choose':'Welcome, touch screen to continue', 
@@ -14,21 +19,24 @@ DEFAULT = {
               'date':'Please select a date for your outward journey',
               'quick':'Quick ticket selection for popular destinations',
               'card':'Card payment only',
-              'future':'Tickets for\nfuture\ntravel'},# English
+              'future':'Tickets for\nfuture\ntravel',
+              'translate':'Choose your preferred language'},# English
         'fr':{'choose':'Bienvenue, écran tactile pour continuer', 
               'chosen':'Les détails de votre voyage', 
               'recharge':'Veuillez toucher votre carte sur le lecteur',
               'date':'Veuillez sélectionner une date pour votre voyage aller',
               'quick':'Sélection rapide de billets pour les destinations populaires',
               'card':'Paiement par carte uniquement',
-              'future':'Billets pour\nde futurs\nvoyages'},# French
+              'future':'Billets pour\nde futurs\nvoyages',
+              'translate':'Choisissez votre langue preferee'},# French
         'pn':{'choose':'Welcome, abeg touch screen to continue', 
               'chosen':'Your journey details', 
               'recharge':'Abeg touch your card for the reader',
               'date':'Abeg select the day wey you want travel',
               'quick':'Quickly select tickets for popular journey',
               'card':'Only card payment',
-              'future':'Tickets for\nfuture\njourney'},# Pidgin English
+              'future':'Tickets for\nfuture\njourney',
+              'translate':'Choose language wey you like'},# Pidgin English
         # 'ig':{'choose':'', 
         #       'chosen':'', 
         #       'recharge':'',
@@ -105,6 +113,34 @@ def init(filename, clear=False):
     if changed:
         with io.open(PARSER.filename, 'w', encoding='utf-8') as fp:
             PARSER.write(fp)
+
+def edit():
+    if not getattr(PARSER, 'filename', None):
+        raise EnvironmentError('Translation system is not initialized')
+    open_text_editor(PARSER.filename)
+
+def change_language(lang, desc=''):
+    # Global keyword must be used here because assigning variable automatically makes it a local variable
+    global CURRENT
+    if lang in get_supported_languages():
+        if CURRENT != lang:
+            config = ConfigParser()
+            config.read('/home/pi/.config/piticket/piticket.cfg')
+            with io.open('/home/pi/.config/piticket/piticket.cfg', 'w', encoding='utf-8') as fp:
+                config['LANGUAGE']['CURRENT'] = lang
+                config.write(fp)
+            
+            CURRENT = lang
+            LOGGER.info("Changed language to '%s(%s)'",desc,lang)
+    else:
+        LOGGER.warning("Unsupported language '%s', fallback to '%s'", lang, CURRENT)
+
+def get_supported_languages():
+    """Return a list of the supported languages
+    """
+    if getattr(PARSER, 'filename', None):
+        return list(sorted(lang for lang in PARSER.sections()))
+    return list(sorted(DEFAULT.keys()))
 
 def get_translated_text(key):
     """Return the text corresponding to the key in the language defined in the config.
