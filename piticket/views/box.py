@@ -425,15 +425,17 @@ class Button(Box):
     def update(self, event, screen):
         self.handle_events(event)
         self.draw(screen)
-        if self._released and self._clicked_callback_func:
-            self._clicked_callback_func(*self._clicked_callback_args,
-                                        **self._clicked_callback_kwargs)
-        self._released = False
+        if self._released:
+            if self._clicked_callback_func:
+                self._clicked_callback_func(*self._clicked_callback_args,
+                                            **self._clicked_callback_kwargs)
+            self._released = False
 
         if self._hovered:
             if self._hovered_callback_func:
                 self._hovered_callback_func(*self._hovered_callback_args,
-                                        **self._hovered_callback_kwargs)           
+                                        **self._hovered_callback_kwargs)  
+                    
 
     def draw(self, screen):
         if self._clicked:
