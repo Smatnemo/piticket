@@ -73,21 +73,37 @@ def state_translate_exit(cfg,app,win):
     """"""
 
 
-
 @hookspec 
-def state_pay_enter(app,win):
+def state_future_tickets_enter(cfg,app,win):
     """"""
 
 @hookspec 
-def state_pay_do(app,win,events):
+def state_future_tickets_do(cfg,app,win,events):
     """"""
 
 @hookspec(firstresult=True) 
-def state_pay_validate(app,win,events):
+def state_future_tickets_validate(cfg,app,win,events):
     """"""
 
 @hookspec 
-def state_pay_exit(app,win):
+def state_future_tickets_exit(cfg,app,win):
+    """"""
+
+
+@hookspec 
+def state_pay_enter(cfg,app,win):
+    """"""
+
+@hookspec 
+def state_pay_do(cfg,app,win,events):
+    """"""
+
+@hookspec(firstresult=True) 
+def state_pay_validate(cfg,app,win,events):
+    """"""
+
+@hookspec 
+def state_pay_exit(cfg,app,win):
     """"""
 
 

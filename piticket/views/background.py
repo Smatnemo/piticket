@@ -3,7 +3,7 @@ from pygame.event import Event, post
 from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
 from piticket.pictures import get_filename
-from piticket.language import get_translated_text, change_language
+from piticket.language import get_translated_text, get_supported_languages, get_current_lang, rearrange_supported_languages
 from piticket.views.box import Box, Header, Footer, RightSideBar, LeftSideBar, Button
 from piticket.views.row import RowView
 
@@ -74,6 +74,23 @@ class Background():
                                 color=self._left_sidebar.get_color(),
                                 position=Box.BOTTOMLEFT,
                                 interactable=False)
+        self.back_button = Button(parent=self.side_bar_bottom, 
+                                x=0, y=0, width=120, 
+                                height=60, padding=20,
+                                content=get_translated_text('back'),
+                                content_position='center',
+                                color=self._header.get_color(),
+                                position='top-center')
+        self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='choose'))
+        self.cancel_button = Button(parent=self.side_bar_bottom, 
+                                x=0, y=0, width=120, 
+                                height=60, padding=20,
+                                content=get_translated_text('cancel'),
+                                content_position='center',
+                                color=(255,0,0),
+                                position='bottom-center')
+        self.cancel_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='wait'))
+
          # position of title and options
         x = self._left_sidebar.width + self._left_sidebar.margin
         y = self._header.height + self._header.margin
@@ -177,6 +194,10 @@ class Background():
             self.main_content.draw(screen)
         if self.title:
             self.title.draw(screen)
+        if self.cancel_button:
+            self.cancel_button.update(self.event, screen)
+        if self.back_button:
+            self.back_button.update(self.event, screen)
 
 
 class IntroBackground(Background):
@@ -194,7 +215,10 @@ class VideoBackground(Background):
 class ChooseBackground(Background):
     def __init__(self, tickets, surface):
         Background.__init__(self, 'choose', surface=surface)
-        
+        # Make back and cancel buttons None
+        self.back_button = None 
+        self.cancel_button = None
+
         x = self._left_sidebar.width + self._left_sidebar.margin
         y = self.title.y+self.title.height
         self.options = Box(parent=surface,
@@ -212,26 +236,27 @@ class ChooseBackground(Background):
                         interactable=False)
         # Add all these buttons to options attribute
         self.recharge_card = Button(parent=self.options, 
-                        x=0, y=0, width=240, 
-                        height=160, padding=0, border=0,
+                        x=0, y=0, width=230, 
+                        height=140, padding=0, border_radius=10,
                         content=get_filename('mastercard.png'),
                         content_position='center',
                         color=self.get_color(),
-                        position='top-left')
+                        position=Box.TOPLEFT)
         self.all_travels = Button(parent=self.options, 
-                        x=0, y=0, width=240, 
-                        height=160, padding=0, border=0,
-                        content=get_filename('mastercard.png'),
+                        x=0, y=0, width=230, 
+                        height=140, padding=20, margin=0,
+                        border_radius=10,
+                        content=get_translated_text('destinations'),
                         content_position='center',
-                        color=self.get_color(),
-                        position='center')
+                        color=self._header.get_color(),
+                        position=Box.TOPCENTER)
         self.collect_ticket = Button(parent=self.options, 
-                        x=0, y=0, width=240, 
-                        height=160, padding=0, border=0,
-                        content=get_filename('mastercard.png'),
+                        x=0, y=0, width=230, 
+                        height=140, padding=20, border_radius=10,
+                        content=get_translated_text('collect'),
                         content_position='center',
-                        color=self.get_color(),
-                        position='top-right') 
+                        color=self._header.get_color(),
+                        position=Box.TOPRIGHT) 
         
         # Add title below the buttons
         x = x
@@ -328,11 +353,37 @@ class ChooseBackground(Background):
         self.translations = Button(parent=self.side_bar_center, 
                         x=0, y=0, width=150, 
                         height=100, padding=0, border=0,
-                        content=get_filename('mastercard.png'),
+                        content=None,
                         content_position='center',
-                        color=self.side_bar_center.get_color(),
+                        color=self._header.get_color(),
                         position=Box.CENTER)
         self.translations.clicked(post,Event(pygame.MOUSEBUTTONUP,state='translate'))
+        # create boxes for each language
+        self.flags = [Box(parent=self.translations,
+                        x=0, y=0, width=63,
+                        height=42, padding=2,
+                        margin=0,
+                        border=0,
+                        border_radius=0,
+                        border_color=None, 
+                        content=get_filename(f'{lang}_flag.png'),
+                        content_color=(0,0,0),
+                        content_position='center',
+                        color=self.side_bar_top.get_color(),
+                        position=position,
+                        interactable=False) if lang==get_current_lang() else Box(parent=self.translations,
+                                                                        x=0, y=0, width=42,
+                                                                        height=28, padding=2,
+                                                                        margin=0,
+                                                                        border=0,
+                                                                        border_radius=0,
+                                                                        border_color=None, 
+                                                                        content=get_filename(f'{lang}_flag.png'),
+                                                                        content_color=(0,0,0),
+                                                                        content_position='center',
+                                                                        color=self.side_bar_top.get_color(),
+                                                                        position=position,
+                                                                        interactable=False)for lang, position in zip(rearrange_supported_languages(),[Box.CENTERLEFT, Box.CENTER, Box.CENTERRIGHT])]
 
         # Create button to navigate the calender for future travels
         self.future_tickets = Button(parent=self.side_bar_bottom, 
@@ -366,6 +417,8 @@ class ChooseBackground(Background):
             self.card_payment.draw(screen)
         if self.translations:
             self.translations.update(self.event, screen)
+        for flag in self.flags:
+            flag.draw(screen)
         if self.future_tickets:
             self.future_tickets.update(self.event, screen)
         
@@ -374,29 +427,17 @@ class ChosenBackground(Background):
     def __init__(self, chosen_ticket, surface):
         Background.__init__(self, 'chosen', surface=surface)
         self.chosen_ticket = chosen_ticket
-        self.back_button = Button(parent=self.side_bar_bottom, 
-                        x=0, y=0, width=120, 
-                        height=60, padding=20,
-                        content='Back',
-                        content_position='center',
-                        color=self._header.get_color(),
-                        position='top-center')
-        self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='choose'))
-        self.cancel_button = Button(parent=self.side_bar_bottom, 
-                        x=0, y=0, width=120, 
-                        height=60, padding=20,
-                        content='Cancel',
-                        content_position='center',
-                        color=(255,0,0),
-                        position='bottom-center')
-        self.cancel_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='wait'))
         
     def paint(self, screen):
         Background.paint(self, screen)
-        if self.cancel_button:
-            self.cancel_button.update(self.event, screen)
-        if self.back_button:
-            self.back_button.update(self.event, screen)
+
+
+class CalendarBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'calendar', surface=surface)
+    
+    def paint(self, screen):
+        Background.paint(self, screen)
 
 
 class TranslateBackground(Background):
@@ -418,7 +459,7 @@ class TranslateBackground(Background):
                         x=0, y=0, width=180, 
                         height=120, padding=2,
                         border=0,
-                        content=get_filename('ng_flag.jpg'),
+                        content=get_filename('en_flag.png'),
                         content_position='center',
                         color=self.get_color(),
                         position=Box.TOPLEFT)
@@ -460,7 +501,7 @@ class TranslateBackground(Background):
                         x=0, y=0, width=180, 
                         height=120, padding=2,
                         border=0,
-                        content=get_filename('pidgin.jpg'),
+                        content=get_filename('pn_flag.png'),
                         content_position='center',
                         color=self.get_color(),
                         position=Box.BOTTOMLEFT)

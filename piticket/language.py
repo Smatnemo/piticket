@@ -17,7 +17,12 @@ DEFAULT = {
               'quick':'Quick ticket selection for popular destinations',
               'card':'Card payment only',
               'future':'Tickets for\nfuture\ntravel',
-              'translate':'Choose your preferred language'},# English
+              'translate':'Choose your preferred language',
+              'back':'Back',
+              'cancel':'Cancel',
+              'calendar':'Choose or change your travel date',
+              'destinations':'A-Z\nTravel\nDestinations',
+              'collect':'Collect prepaid\ntickets'},# English
         'fr':{'choose':'Bienvenue, écran tactile pour continuer', 
               'chosen':'Les détails de votre voyage', 
               'recharge':'Veuillez toucher votre carte sur le lecteur',
@@ -25,7 +30,12 @@ DEFAULT = {
               'quick':'Sélection rapide de billets pour les destinations populaires',
               'card':'Paiement par carte uniquement',
               'future':'Billets pour\nde futurs\nvoyages',
-              'translate':'Choisissez votre langue preferee'},# French
+              'translate':'Choisissez votre langue préférée',
+              'back':'Précédent',
+              'cancel':'Annuler',
+              'calendar':'Choisissez ou modifiez votre date de voyage',
+              'destinations':'Destinations de\nvoyage de\nA à Z',
+              'collect':'Collectez les\nbillets\nprépayés'},# French
         'pn':{'choose':'Welcome, abeg touch screen to continue', 
               'chosen':'Your journey details', 
               'recharge':'Abeg touch your card for the reader',
@@ -33,7 +43,12 @@ DEFAULT = {
               'quick':'Quickly select tickets for popular journey',
               'card':'Only card payment',
               'future':'Tickets for\nfuture\njourney',
-              'translate':'Choose language wey you like'},# Pidgin English
+              'translate':'Choose language wey you like',
+              'back':'Back',
+              'cancel':'Cancel',
+              'calendar':'Choose or change your travel date',
+              'destinations':'A-Z\nTravel\nDestinations',
+              'collect':'Collect\ntickets\nwey you\ndone pay for'},# Pidgin English
         # 'ig':{'choose':'', 
         #       'chosen':'', 
         #       'recharge':'',
@@ -130,12 +145,25 @@ def change_language(config, lang, desc=''):
     else:
         LOGGER.warning("Unsupported language '%s', fallback to '%s'", lang, CURRENT)
 
+def get_current_lang():
+    return CURRENT 
+
 def get_supported_languages():
     """Return a list of the supported languages
     """
     if getattr(PARSER, 'filename', None):
         return list(sorted(lang for lang in PARSER.sections()))
     return list(sorted(DEFAULT.keys()))
+
+def rearrange_supported_languages():
+    languages = get_supported_languages()
+    if len(languages) <= 1:
+        return languages
+    for lang in get_supported_languages():
+        if lang == CURRENT:
+            languages.pop(languages.index(lang))
+            languages.insert(1,lang)
+    return languages[:3]
 
 def get_translated_text(key):
     """Return the text corresponding to the key in the language defined in the config.

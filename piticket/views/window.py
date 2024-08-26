@@ -70,6 +70,13 @@ class PiWindow():
         else:
             self._update_background(background.ChosenBackground(tickets[selected], self.surface), event)
 
+    def show_calendar(self, event):
+        """Display a list of available translations. Choose a language
+        :param event: event for button effects
+        :type event: pygame.event.Event
+        """
+        self._update_background(background.CalendarBackground(self.surface), event)
+
     def show_translations(self, event):
         """Display a list of available translations. Choose a language
         :param event: event for button effects

@@ -22,6 +22,7 @@ class PiApplication():
     def __init__(self, plugin_manager,config):
         self.win = PiWindow('Piticket')
         self._pm = plugin_manager
+        
         self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
         self.states_machine.add_state('choose')
@@ -30,6 +31,7 @@ class PiApplication():
         self.states_machine.add_state('collect')
         self.states_machine.add_state('recharge')
         self.states_machine.add_state('translate')
+        self.states_machine.add_state('future_tickets')
 
         self.states_machine.add_state('pay')
         self.states_machine.add_state('print')

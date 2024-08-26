@@ -112,22 +112,44 @@ class ViewPlugin():
         win.drop_cache()
 
     @hookimpl
-    def state_pay_enter(self,app,win):
+    def state_future_tickets_enter(self,cfg,app,win):
         """"""
 
     @hookimpl 
-    def state_pay_do(self,app,win,events):
+    def state_future_tickets_do(self,cfg,app,win,events):
+        """"""
+        event = app.find_button_event(events)
+        win.show_calendar(event)
+
+    @hookimpl
+    def state_future_tickets_validate(self,cfg,app,win,events):
+        """"""
+        change_event = app.find_change_event(events)
+        if change_event:
+            return change_event.state
+
+    @hookimpl
+    def state_future_tickets_exit(self,cfg,app,win):
+        """"""
+
+
+    @hookimpl
+    def state_pay_enter(self,cfg,app,win):
+        """"""
+
+    @hookimpl 
+    def state_pay_do(self,cfg,app,win,events):
         """"""
         win.show_pay()
 
     @hookimpl
-    def state_pay_validate(self,app,win,events):
+    def state_pay_validate(self,cfg,app,win,events):
         event = app.find_change_event(events)
         if event:
             return 'chosen'
 
     @hookimpl 
-    def state_pay_exit(self,app,win):
+    def state_pay_exit(self,cfg,app,win):
         """"""
 # The Symbol for Naira alt Code is 8358.
 # Naira symbol not showing in render
