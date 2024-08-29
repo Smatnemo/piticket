@@ -54,16 +54,17 @@ class Box:
     POSITIONS = [TOPLEFT, TOPCENTER, TOPRIGHT, CENTERLEFT, CENTER, 
                 CENTERRIGHT, BOTTOMLEFT, BOTTOMCENTER, BOTTOMRIGHT, None]
 
-    def __init__(self, parent:object,
-                x:int, y:int, 
-                width:int, height:int,
-                position:str, 
-                margin:int, padding:int,                 
-                border:int, border_radius:int,
-                border_color:tuple,
-                content:str, content_color:tuple,
-                content_position: str,
-                color:tuple,  interactable:bool):
+    def __init__(self, parent:object=None,
+                x:int=0, y:int=0, 
+                width:int=0, height:int=0,
+                position:str='', 
+                margin:int=0, padding:int=0,                 
+                border:int=0, border_radius:int=0,
+                border_color:tuple=(),
+                content:str='', content_color:tuple=(),
+                content_size:tuple=(),
+                content_position: str='',
+                color:tuple=(),  interactable:bool=False):
         """Generic base box class for all box elements to be implemented
         in the app.
         :attr rect: a rectangle of dimensions x, y, width and height
@@ -87,6 +88,8 @@ class Box:
         :type color: tuple or list
         :attr content_color: the color of the text if text is the content. No color if image is content
         :type content_color: tuple or list
+        :attr content_size: the size of the content if content is not text
+        :type content_size: tuple
         :attr screen: the screen surface before a button is added
         :type screen: pygame.Surface
         :attr parent: parent must implement a get_rect method to recturn a pygame.Rect object
@@ -115,6 +118,7 @@ class Box:
         self.content_surfaces = []
         self.content_color = content_color
         self.content_position = content_position
+        self.content_size = content_size
 
         self.interactable = interactable
         self._clicked = False 
@@ -182,6 +186,11 @@ class Box:
     def get_rect(self):
         return self.rect 
     
+    def get_content_rect(self):
+        if not self.content_surfaces:
+            raise AttributeError('Content surfaces is not yet set')
+        return self.content_surfaces[0][0].get_rect()
+
     def get_color(self):
         return self.color
 
@@ -233,7 +242,7 @@ class Box:
             and class attributes.
         """
         if rect is None:
-            rect = self.rect 
+            rect = self.rect.copy() 
         if align is None:
             align = self.content_position
         # Maximum padding value should not be greater that min(width, height)//2 as ensured in the padding setter
@@ -246,6 +255,10 @@ class Box:
         if not content:
             content = self.content
         if content:
+            if self.content_size and self.content_size[0] <= rect.width and self.content_size[1] <= rect.height:
+                rect.width = self.content_size[0]
+                rect.height = self.content_size[1]
+
             if not osp.isfile(content):
                 self.content_surfaces = multiline_text_to_surfaces(content, 
                                                             self.content_color, 
@@ -345,6 +358,7 @@ class Button(Box):
                 content='Button',
                 content_color=(255,255,255),
                 content_position='center',
+                content_size=(),
                 color=(133,133,133),
                 clicked_color=(60,60,60),
                 clicked_border_color=(255,255,255),
@@ -353,18 +367,17 @@ class Button(Box):
                 parent=None):
         # Button must be interactable
         interactable=True
-        Box.__init__(self, parent,
-                    x, y,
-                    width, height, 
-                    position,
-                    margin, padding,
-                    border, border_radius,
-                    border_color,
-                    content, 
-                    content_color,
-                    content_position,
-                    color,
-                    interactable)
+        Box.__init__(self, parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
 
         self.clicked_color = clicked_color 
         self.clicked_border_color = clicked_border_color 
@@ -459,6 +472,7 @@ class PopUpBox(Box):
                 content='Would you like to continue?',
                 content_color=(255,255,255),
                 content_position='top-center',
+                content_size=(),
                 color=(133,133,133),
                 interactable=False,
                 timeout=10,
@@ -477,15 +491,17 @@ class PopUpBox(Box):
         self._content = content
 
         Box.__init__(self, 
-                parent, x, y,
-                width, height,
-                position,
-                margin, padding,
-                border, border_radius,
-                border_color, content,
-                content_color, 
-                content_position, color,
-                interactable)
+                parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
 
         # Marks the end of the popupbox execution circle when True
         self._triggered = False
@@ -578,7 +594,9 @@ class PopUpBoxProcessing(Box):
                 border_color=(0,0,0),
                 content='Processing',
                 content_color=(255,255,255),
-                content_position='top-center',color=(133,133,133),
+                content_position='top-center',
+                content_size=(),
+                color=(133,133,133),
                 interactable=False,
                 gif_image=None):
         """:param gif_name: the name of the folder with gif frames.
@@ -590,15 +608,17 @@ class PopUpBoxProcessing(Box):
         self.gif_image = gif_image
 
         Box.__init__(self, 
-                parent, x, y,
-                width, height,
-                position,
-                margin, padding,
-                border, border_radius,
-                border_color, content,
-                content_color, 
-                content_position, color,
-                interactable)
+                parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
         # Marks the beginning
         self.started = True 
         # Marks the end of the processing circle
@@ -695,6 +715,7 @@ class Header(Box):
                 content=None,
                 content_color=(255,255,255),
                 content_position='center',
+                content_size=(),
                 color=(133,133,133),
                 interactable=False):
 
@@ -702,15 +723,17 @@ class Header(Box):
         width = parent.get_rect().width
 
         Box.__init__(self,
-                parent, x, y,
-                width, height,
-                position,
-                margin, padding,
-                border, border_radius,
-                border_color, content,
-                content_color, 
-                content_position, color,
-                interactable)
+                parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
 
         
         d = datetime.fromtimestamp(time.time())
@@ -781,21 +804,24 @@ class Footer(Box):
                 content=None,
                 content_color=(255,255,255),
                 content_position='center',
+                content_size=(),
                 color=(133,133,133),
                 interactable=False):
 
         position=self.BOTTOMLEFT
         width = parent.get_rect().width
 
-        Box.__init__(self,parent, x, y,
-                width, height,
-                position,
-                margin, padding,
-                border, border_radius,
-                border_color, content,
-                content_color, 
-                content_position, color,
-                interactable)
+        Box.__init__(self,parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
 
     def draw(self, screen):
         width = screen.get_rect().width 
@@ -814,6 +840,7 @@ class LeftSideBar(Box):
                 content=None,
                 content_color=(255,255,255),
                 content_position='center', 
+                content_size=(),
                 color=(133,133,133),
                 interactable=False):
 
@@ -821,15 +848,17 @@ class LeftSideBar(Box):
         height = parent.get_rect().height
 
         Box.__init__(self,
-                parent, x, y,
-                width, height,
-                position,
-                margin, padding,
-                border, border_radius,
-                border_color, content,
-                content_color, 
-                content_position, color,
-                interactable)
+                parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
 
     def draw(self, screen):
         height = screen.get_rect().height 
@@ -847,6 +876,7 @@ class RightSideBar(Box):
                 content=None,
                 content_color=(255,255,255),
                 content_position='center',
+                content_size=(),
                 color=(133,133,133),
                 interactable=False):
 
@@ -854,15 +884,17 @@ class RightSideBar(Box):
         height = parent.get_rect().height
 
         Box.__init__(self,
-                parent, x, y,
-                width, height,
-                position,
-                margin, padding,
-                border, border_radius,
-                border_color, content,
-                content_color, 
-                content_position, color,
-                interactable)
+                parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=content,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=content_size,
+                color=color,
+                interactable=interactable)
 
     def draw(self, screen):
         height = screen.get_rect().height 
@@ -870,3 +902,167 @@ class RightSideBar(Box):
             self.height = height 
             self.rect = (self.x, self.y, self.width, self.height)
         Box.draw(self, screen)
+
+class Field(Box):
+    def __init__(self, parent,
+                x, y, width,
+                height, position,
+                margin, padding,
+                border, border_radius,
+                border_color, label,
+                color, content='', content_color=(0,0,0), 
+                content_position=Box.CENTERLEFT,
+                label_size=(), min_max={},
+                increase_decrease=False,
+                interactable=True,
+                button1_config={},
+                button2_config={}):
+
+        Box.__init__(self,
+                parent=parent, x=x, y=y,
+                width=width, height=height,
+                position=position,
+                margin=margin, padding=padding,
+                border=border, border_radius=border_radius,
+                border_color=border_color, content=None,
+                content_color=content_color, 
+                content_position=content_position, 
+                content_size=(),
+                color=color,
+                interactable=interactable)
+
+        self.label_box = Box(parent=self,
+                x=0, y=0, width=label_size[0],
+                height=label_size[1], padding=10,
+                margin=0,
+                border=0,
+                border_radius=0,
+                border_color=(255,0,0), 
+                content=label+': ',
+                content_color=(0,0,0),
+                content_position=Box.CENTERRIGHT,
+                content_size=(),
+                color=self.get_color(),
+                position=Box.CENTERLEFT,
+                interactable=False)
+        
+        self.input_box = Box(parent=self,
+                x=self.label_box.x+self.label_box.width, 
+                y=self.height//2-label_size[1]//2, 
+                width=width-label_size[0]-200,
+                height=label_size[1], padding=10,
+                margin=0,
+                border=0,
+                border_radius=0,
+                border_color=(255,0,0), 
+                content=content,
+                content_color=content_color,
+                content_position=content_position,
+                content_size=(),
+                color=(255,255,255),
+                position=None,
+                interactable=False)
+
+        self.button_box = Box(parent=self,
+                x=self.label_box.x+self.label_box.width+self.input_box.width, 
+                y=self.height//2-label_size[1]//2, 
+                width=width-label_size[0]-self.input_box.width,
+                height=label_size[1], padding=0,
+                margin=0,
+                border=0,
+                border_radius=0,
+                border_color=(0,0,0), 
+                content=None,
+                content_color=(0,0,0),
+                content_position=Box.CENTER,
+                content_size=(),
+                color=color,
+                position=Box.CENTERRIGHT,
+                interactable=False)
+
+        if button1_config and button2_config:
+            self.center_buttons = Box(parent=self.button_box,
+                x=self.label_box.x+self.label_box.width+self.input_box.width, 
+                y=self.height//2-label_size[1]//2, 
+                width=button1_config['size']['width']+button2_config['size']['width'],
+                height=label_size[1], padding=0,
+                margin=0,
+                border=0,
+                border_radius=0,
+                border_color=(0,0,0), 
+                content=None,
+                content_color=(0,0,0),
+                content_position=Box.CENTER,
+                content_size=(),
+                color=color,
+                position=Box.CENTER,
+                interactable=False)
+            button_parent = self.center_buttons 
+        else:
+            button_parent = self.button_box
+
+        if button1_config:
+            self.button1 = Button(parent=button_parent, 
+                x=0, y=0,
+                width=button1_config['size']['width'], height=button1_config['size']['height'],
+                position=button1_config.get('position'),
+                margin=20, padding=10,
+                border=1, border_radius=8,
+                border_color=(0,0,0),
+                content=button1_config.get('content'),
+                content_color=(255,255,255),
+                content_position=Box.CENTER,
+                content_size=(),
+                color=button1_config.get('color',(0,0,0)))
+            if increase_decrease and min_max.get('min') is not None:
+                self.clicked('button1', self.decrease_number, min_max.get('min'))
+        else:
+            self.button1 = None
+        if button2_config:
+            self.button2 = Button(parent=button_parent, 
+                x=0, y=0,
+                width=button2_config['size']['width'], height=button2_config['size']['height'],
+                position=button2_config.get('position'),
+                margin=20, padding=10,
+                border=1, border_radius=8,
+                border_color=(0,0,0),
+                content=button2_config.get('content'),
+                content_color=(255,255,255),
+                content_position=Box.CENTER,
+                content_size=(),
+                color=button2_config.get('color',(0,0,0)))
+            if increase_decrease and min_max.get('max') is not None:
+                self.clicked('button2', self.increase_number, min_max.get('max'))
+        else:
+            self.button2 = None
+
+    def clicked(self, button, func, *args, **kwargs):
+        if hasattr(self, button):
+            btn = getattr(self, button)
+            btn.clicked(func, *args, **kwargs)
+
+    def increase_number(self, max_num):
+        self.input_box.content = int(self.input_box.content)
+        self.input_box.content += 1
+        self.input_box.content = min(self.input_box.content,max_num)
+        self.input_box.content = str(self.input_box.content)
+
+    def decrease_number(self, min_num):
+        self.input_box.content = int(self.input_box.content)
+        self.input_box.content -= 1
+        self.input_box.content = max(self.input_box.content,min_num)
+        self.input_box.content = str(self.input_box.content)
+
+    def draw(self, screen):
+        Box.draw(self, screen)
+        self.label_box.draw(screen)
+        self.input_box.draw(screen)
+        self.button_box.draw(screen)
+    
+    def update(self, event, screen):
+        self.input_box.position_content()
+        self.draw(screen)
+        if self.button1:
+            self.button1.update(event, screen)
+        if self.button2:
+            self.button2.update(event, screen)

@@ -71,7 +71,7 @@ class PiWindow():
             self._update_background(background.ChosenBackground(tickets[selected], self.surface), event)
 
     def show_calendar(self, event):
-        """Display a list of available translations. Choose a language
+        """Display dates using a calendar.
         :param event: event for button effects
         :type event: pygame.event.Event
         """
@@ -83,7 +83,17 @@ class PiWindow():
         :type event: pygame.event.Event
         """
         self._update_background(background.TranslateBackground(self.surface), event)
+    
+    def show_recharge(self, event):
+        """Display option for recharging smart card.
+        :param event: event for button effects
+        :type event: pygame.event.Event
+        """
+        self._update_background(background.RechargeBackground(self.surface), event)
 
+    def show_pay(self):
+        self._update_background(background.PayBackground(self.surface))
+        
     def show_popup_box(self, state_name, timeout, app):
         """Show a pop up box on any state.
         :param state_name: the name of the state calling the pop up box
@@ -99,7 +109,7 @@ class PiWindow():
         # End pop up box when No button is clicked and return to wait state
         self._popup_box.btn2.clicked(app.post_event, 'wait')
         # End pop up box after timeout duration
-        self._popup_box.triggered(LOGGER.info, 'Triggered at the end of PopUp')
+        self._popup_box.triggered(app.post_event, 'wait')
 
         while self._popup_box.started:
             events = pygame.event.get()

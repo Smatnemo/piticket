@@ -12,7 +12,8 @@ CURRENT = 'en'
 DEFAULT = {
         'en':{'choose':'Welcome, touch screen to continue', 
               'chosen':'Your journey details', 
-              'recharge':'Please touch your card on the reader',
+              'recharge':'Please place your smartcard on the reader to recharge',
+              'smartcard':'Recharge your smartcard',
               'date':'Please select a date for your outward journey',
               'quick':'Quick ticket selection for popular destinations',
               'card':'Card payment only',
@@ -22,10 +23,13 @@ DEFAULT = {
               'cancel':'Cancel',
               'calendar':'Choose or change your travel date',
               'destinations':'A-Z\nTravel\nDestinations',
-              'collect':'Collect prepaid\ntickets'},# English
+              'collect':'Collect prepaid\ntickets',
+              'pay':'Press to pay for your ticket',
+              'card_payment':'Pleaase, tap or insert card to complete purchase'},# English
         'fr':{'choose':'Bienvenue, écran tactile pour continuer', 
               'chosen':'Les détails de votre voyage', 
-              'recharge':'Veuillez toucher votre carte sur le lecteur',
+              'recharge':'Veuillez placer votre carte à puce sur le lecteur pour la recharger',
+              'smartcard':'Rechargez votre carte à puce',
               'date':'Veuillez sélectionner une date pour votre voyage aller',
               'quick':'Sélection rapide de billets pour les destinations populaires',
               'card':'Paiement par carte uniquement',
@@ -35,10 +39,13 @@ DEFAULT = {
               'cancel':'Annuler',
               'calendar':'Choisissez ou modifiez votre date de voyage',
               'destinations':'Destinations de\nvoyage de\nA à Z',
-              'collect':'Collectez les\nbillets\nprépayés'},# French
+              'collect':'Collectez les\nbillets\nprépayés',
+              'pay':'Appuyez sur pour payer votre billet',
+              'card_payment':"Veuillez appuyer ou ins�rer la carte pour finaliser l'achat"},# French
         'pn':{'choose':'Welcome, abeg touch screen to continue', 
               'chosen':'Your journey details', 
-              'recharge':'Abeg touch your card for the reader',
+              'recharge':'Abeg touch your card for the reader to recharge am',
+              'smartcard':'Recharge your smartcard',
               'date':'Abeg select the day wey you want travel',
               'quick':'Quickly select tickets for popular journey',
               'card':'Only card payment',
@@ -48,7 +55,9 @@ DEFAULT = {
               'cancel':'Cancel',
               'calendar':'Choose or change your travel date',
               'destinations':'A-Z\nTravel\nDestinations',
-              'collect':'Collect\ntickets\nwey you\ndone pay for'},# Pidgin English
+              'collect':'Collect\ntickets\nwey you\ndone pay for',
+              'pay':'Press make you pay for your ticket',
+              'card_payment':'Abeg, tap or insert card to complete purchase'},# Pidgin English
         # 'ig':{'choose':'', 
         #       'chosen':'', 
         #       'recharge':'',

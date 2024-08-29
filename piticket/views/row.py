@@ -94,15 +94,8 @@ class RowView(Box):
                         row=row) for row_box, row in zip(self.row_boxes, rows)]
         # post event when clicked
         for row in self.rows:
-            row.clicked(pygame.event.post, pygame.event.Event(pygame.MOUSEBUTTONUP,state='chosen'))
+            row.clicked(pygame.event.post, pygame.event.Event(pygame.MOUSEBUTTONUP,state='chosen',choice=tuple(row.content)))
         self.chosen_row = None
-
-
-    def select_row(self):
-        for row in self.rows:
-            if row.chosen == True:
-                self.chosen_row = row 
-                row.chosen = False
 
     def update(self, event, screen):
         Box.draw(self, screen)

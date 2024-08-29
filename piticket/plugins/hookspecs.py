@@ -74,6 +74,24 @@ def state_translate_exit(cfg,app,win):
 
 
 @hookspec 
+def state_recharge_enter(cfg,app,win):
+    """"""
+
+@hookspec 
+def state_recharge_do(cfg,app,win,events):
+    """"""
+
+@hookspec(firstresult=True) 
+def state_recharge_validate(cfg,app,win,events):
+    """"""
+
+@hookspec 
+def state_recharge_exit(cfg,app,win):
+    """"""
+
+
+
+@hookspec 
 def state_future_tickets_enter(cfg,app,win):
     """"""
 

@@ -23,3 +23,5 @@ class Geolocator(Nominatim):
 
 
 location = locator('Lagos')
+if location=='Laos':
+    location = 'Lagos'

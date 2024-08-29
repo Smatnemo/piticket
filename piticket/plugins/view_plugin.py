@@ -14,29 +14,29 @@ class ViewPlugin():
         self.timeout = 10
 
     @hookimpl 
-    def state_wait_enter(self,app,win):
+    def state_wait_enter(self,cfg,app,win):
         win.drop_cache()
 
     @hookimpl 
-    def state_wait_do(self,app,win):
+    def state_wait_do(self,cfg,app,win):
         win.show_intro()
 
     @hookimpl 
-    def state_wait_validate(self,app,win,events):
+    def state_wait_validate(self,cfg,app,win,events):
         change_event = app.find_event(events)
         if change_event:
             return 'choose'
         
     @hookimpl
-    def state_choose_enter(self,app,win):
+    def state_choose_enter(self,cfg,app,win):
         """"""
         self.screen_lock_timer.start()
 
     @hookimpl 
-    def state_choose_do(self,app,win,events):
+    def state_choose_do(self,cfg,app,win,events):
         """"""
         event = app.find_button_event(events)
-        win.show_choice(event, tickets=travels)
+        win.show_choice(event, tickets=app.ticket_choices)
         if event:
             # Reset timer if cursor is active
             self.screen_lock_timer.start()
@@ -44,30 +44,31 @@ class ViewPlugin():
             win.show_popup_box('choose',self.timeout,app)
         
     @hookimpl
-    def state_choose_validate(self,app,win,events):
+    def state_choose_validate(self,cfg,app,win,events):
         # Find event for next state
         change_event = app.find_change_event(events)  
         if change_event:
+            if change_event.state == 'chosen':
+                app.chosen_ticket = change_event.choice
             # Return to either choose, wait, translate, or chosen
             return change_event.state
         if self.screen_lock_timer.is_timeout():
             return 'wait'
         
     @hookimpl 
-    def state_choose_exit(self,app,win):
+    def state_choose_exit(self,cfg,app,win):
         """"""
-        # Clear event list before next cycle
 
     @hookimpl 
-    def state_chosen_enter(self,app,win):
+    def state_chosen_enter(self,cfg,app,win):
         """"""
         self.screen_lock_timer.start()
 
     @hookimpl 
-    def state_chosen_do(self,app,win,events):
+    def state_chosen_do(self,cfg,app,win,events):
         """"""
         event = app.find_button_event(events)
-        win.show_choice(event,tickets=travels,selected=('Nasarawa','₦10,000','Standard off-peak day return'))
+        win.show_choice(event,tickets=app.ticket_choices,selected=app.chosen_ticket)
         if event:
             # Reset timer if cursor is active
             self.screen_lock_timer.start()
@@ -75,7 +76,7 @@ class ViewPlugin():
             win.show_popup_box('chosen',self.timeout,app)
 
     @hookimpl 
-    def state_chosen_validate(self,app,win,events):
+    def state_chosen_validate(self,cfg,app,win,events):
         change_event = app.find_change_event(events)
         if change_event:
             # Return the state wait, choose, chosen
@@ -85,15 +86,15 @@ class ViewPlugin():
             return 'wait'
 
     @hookimpl 
-    def state_chosen_exit(self,app,win):
+    def state_chosen_exit(self,cfg,app,win):
         """"""
 
     @hookimpl
-    def state_translate_enter(self,app,win):
+    def state_translate_enter(self,cfg,app,win):
         """"""
 
     @hookimpl 
-    def state_translate_do(self,cfg, app,win,events):
+    def state_translate_do(self,cfg,app,win,events):
         """"""
         event = app.find_button_event(events)
         win.show_translations(event)
@@ -107,7 +108,7 @@ class ViewPlugin():
             return change_event.state
 
     @hookimpl 
-    def state_translate_exit(self,app,win):
+    def state_translate_exit(self,cfg,app,win):
         """"""
         win.drop_cache()
 
@@ -133,6 +134,19 @@ class ViewPlugin():
         """"""
 
 
+    @hookimpl 
+    def state_recharge_do(self,cfg,app,win,events):
+        """"""
+        event = app.find_button_event(events)
+        win.show_recharge(event)
+
+    @hookimpl
+    def state_recharge_validate(self,cfg,app,win,events):
+        """"""
+        change_event = app.find_change_event(events)
+        if change_event:
+            return change_event.state
+
     @hookimpl
     def state_pay_enter(self,cfg,app,win):
         """"""
@@ -151,12 +165,3 @@ class ViewPlugin():
     @hookimpl 
     def state_pay_exit(self,cfg,app,win):
         """"""
-# The Symbol for Naira alt Code is 8358.
-# Naira symbol not showing in render
-# Dummy data for RowView
-travels = {('Nasarawa','₦10,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'09:18','route':'ANY PERMITTED','price':'10,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'1'}},
-('Kaduna','₦20,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'10:18','route':'ANY PERMITTED','price':'20,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'0'}},
-('Niger','₦15,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'12:18','route':'ANY PERMITTED','price':'15,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'2'}},
-('Kogi','₦30,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'13:50','route':'ANY PERMITTED','price':'30,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'3','children (5-15)':'0'}},
-('Lagos','₦12,000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Abuja','date_of_travel':'15:60','route':'ANY PERMITTED','price':'12,000','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'3'}}}
-# For choose state and quick display use destination, type, price

@@ -17,11 +17,23 @@ from piticket.states import StatesMachine
 from piticket.config import PiConfigParser
 from piticket.plugins import create_plugin_manager
 
+# The Symbol for Naira alt Code is 8358.
+# Naira symbol not showing in render
+# Dummy data for RowView
+travels = {('Nasarawa','10000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Nasarawa','date_of_travel':'09:18','route':'ANY PERMITTED','price':'10000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'1'}},
+('Kaduna','20000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Kaduna','date_of_travel':'10:18','route':'ANY PERMITTED','price':'20000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'0'}},
+('Niger','15000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Niger','date_of_travel':'12:18','route':'ANY PERMITTED','price':'15000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'2'}},
+('Kogi','30000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Kogi','date_of_travel':'13:50','route':'ANY PERMITTED','price':'30000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'3','children (5-15)':'0'}},
+('Ibadan','12000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Ibadan','date_of_travel':'15:60','route':'ANY PERMITTED','price':'12000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'3'}}}
+# For choose state and quick display use destination, type, price
 
 class PiApplication():
     def __init__(self, plugin_manager,config):
         self.win = PiWindow('Piticket')
         self._pm = plugin_manager
+
+        self.chosen_ticket = None
+        self.ticket_choices = travels
         
         self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
