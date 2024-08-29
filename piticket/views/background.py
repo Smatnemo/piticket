@@ -564,7 +564,17 @@ class ChosenBackground(Background):
                                     content_position='center',
                                     color=self._header.get_color(),
                                     position=Box.BOTTOMRIGHT)
-        self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='pay'))
+        modified_ticket = {'departure_station':self.departure_field.input_box,
+                            'destination':self.destination_field.input_box,
+                            'date_of_travel':self.date_field.input_box,
+                            'route':self.route_field.input_box,
+                            'price':self.total_field.input_box,
+                            'railcard':self.railcard_field.input_box,
+                            'ticket_type':self.tickettype_field.input_box,
+                            'adult(s)':self.adults_field.input_box,
+                            'children (5-15)':self.children_field.input_box}
+        self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='pay',ticket=modified_ticket))
+
 
     def __str__(self):
         return Background.__str__(self)+json.dumps(self.chosen_ticket)
@@ -768,5 +778,82 @@ class TranslateBackground(Background):
             self.pidgin_text.draw(screen)
 
 class PayBackground(Background):
-    def __init__(self, surface):
+    def __init__(self, modified_ticket, surface):
         Background.__init__(self, 'card_payment', surface=surface)
+        self.modified_ticket = modified_ticket
+        self.pay_box = Box(parent=self.main_content,
+                                x=0, y=0,
+                                width=self.main_content.width,
+                                height=self.main_content.height-self.title.height, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=0,
+                                border_color=(255,0,0), 
+                                content=None,
+                                content_color=(0,0,0),
+                                content_position=Box.CENTER,
+                                content_size=(500,400),
+                                color=self.get_color(),
+                                position=Box.BOTTOMCENTER,
+                                interactable=False)
+        self.nfc_box = Box(parent=self.pay_box,
+                                x=0, y=0,
+                                width=300,
+                                height=240, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=0,
+                                border_color=(255,0,0), 
+                                content=get_filename('nfc.png'),
+                                content_color=(0,0,0),
+                                content_position=Box.TOPCENTER,
+                                content_size=(300,240),
+                                color=self.get_color(),
+                                position=Box.TOPCENTER,
+                                interactable=False)
+        self.price_box = Box(parent=self.pay_box,
+                                x=0, y=0,
+                                width=300,
+                                height=240, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=0,
+                                border_color=(255,0,0), 
+                                content=modified_ticket['price'].content,
+                                content_color=(0,0,0),
+                                content_position=Box.CENTER,
+                                content_size=(500,400),
+                                color=self.get_color(),
+                                position=Box.CENTER,
+                                interactable=False)
+        self.pay_button = Button(parent=self.pay_box,
+                                x=0, y=0,
+                                width=200,
+                                height=100, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=10,
+                                border_color=(255,0,0), 
+                                content='Pay',
+                                content_color=(0,0,0),
+                                content_position=Box.CENTER,
+                                content_size=(),
+                                color=self._header.get_color(),
+                                position=Box.BOTTOMCENTER)
+    
+        self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP, state='chosen'))
+        
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.pay_box:
+            self.pay_box.draw(screen)
+        if self.nfc_box:
+            self.nfc_box.draw(screen)
+        if self.price_box:
+            self.price_box.draw(screen)
+        if self.pay_button:
+            self.pay_button.update(self.event, screen)

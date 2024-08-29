@@ -12,6 +12,7 @@ class ViewPlugin():
         self.screen_lock_timer = PoolingTimer(60)
         # Default time for pop up box
         self.timeout = 10
+        self.modified_ticket=None
 
     @hookimpl 
     def state_wait_enter(self,cfg,app,win):
@@ -79,7 +80,9 @@ class ViewPlugin():
     def state_chosen_validate(self,cfg,app,win,events):
         change_event = app.find_change_event(events)
         if change_event:
-            # Return the state wait, choose, chosen
+            if change_event.state=='pay':
+                self.modified_ticket=change_event.ticket
+            # Return the state wait, choose, chosen, pay
             return change_event.state
 
         if self.screen_lock_timer.is_timeout():
@@ -98,6 +101,7 @@ class ViewPlugin():
         """"""
         event = app.find_button_event(events)
         win.show_translations(event)
+
     @hookimpl
     def state_translate_validate(self, cfg, app,win,events):
         """"""
@@ -154,13 +158,14 @@ class ViewPlugin():
     @hookimpl 
     def state_pay_do(self,cfg,app,win,events):
         """"""
-        win.show_pay()
+        event = app.find_button_event(events)
+        win.show_pay(event, self.modified_ticket)
 
     @hookimpl
     def state_pay_validate(self,cfg,app,win,events):
-        event = app.find_change_event(events)
-        if event:
-            return 'chosen'
+        change_event = app.find_change_event(events)
+        if change_event:
+            return change_event.state
 
     @hookimpl 
     def state_pay_exit(self,cfg,app,win):

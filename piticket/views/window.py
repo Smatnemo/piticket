@@ -91,8 +91,10 @@ class PiWindow():
         """
         self._update_background(background.RechargeBackground(self.surface), event)
 
-    def show_pay(self):
-        self._update_background(background.PayBackground(self.surface))
+    def show_pay(self, event, modified_ticket):
+        """
+        """
+        self._update_background(background.PayBackground(modified_ticket, self.surface), event)
         
     def show_popup_box(self, state_name, timeout, app):
         """Show a pop up box on any state.

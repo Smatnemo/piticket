@@ -34,6 +34,9 @@ class PiApplication():
 
         self.chosen_ticket = None
         self.ticket_choices = travels
+
+        self.active_state = None 
+        self.previous_state = None
         
         self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
@@ -92,11 +95,9 @@ class PiApplication():
             fps = 40
             self._initialize()
             self.states_machine.set_state('wait')
+            self.active_state = 'wait'
 
             start = True
-
-            # Change to True to show background
-            show_background = False
 
             while start:
                 # Get events list 
