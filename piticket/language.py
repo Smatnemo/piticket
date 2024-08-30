@@ -25,7 +25,11 @@ DEFAULT = {
               'destinations':'A-Z\nTravel\nDestinations',
               'collect':'Collect prepaid\ntickets',
               'pay':'Press to pay for your ticket',
-              'card_payment':'Pleaase, tap or insert card to complete purchase'},# English
+              'card_payment':'Pleaase, tap or insert card to complete purchase',
+              'successful':'Approved',
+              'unsuccessful':'Failed',
+              'print':'Printing...',
+              'finish':'Please collect your ticket\nThank you for using the ticket machine'},# English
         'fr':{'choose':'Bienvenue, écran tactile pour continuer', 
               'chosen':'Les détails de votre voyage', 
               'recharge':'Veuillez placer votre carte à puce sur le lecteur pour la recharger',
@@ -41,7 +45,11 @@ DEFAULT = {
               'destinations':'Destinations de\nvoyage de\nA à Z',
               'collect':'Collectez les\nbillets\nprépayés',
               'pay':'Appuyez sur pour payer votre billet',
-              'card_payment':"Veuillez appuyer ou ins�rer la carte pour finaliser l'achat"},# French
+              'card_payment':"Veuillez appuyer ou ins�rer la carte pour finaliser l'achat",
+              'successful':'Approuvé',
+              'unsuccessful':'Échoué',
+              'print':'Impression...',
+              'finish':"Merci de récupérer votre billet\nMerci d'utiliser le distributeur de billets"},# French
         'pn':{'choose':'Welcome, abeg touch screen to continue', 
               'chosen':'Your journey details', 
               'recharge':'Abeg touch your card for the reader to recharge am',
@@ -57,7 +65,11 @@ DEFAULT = {
               'destinations':'A-Z\nTravel\nDestinations',
               'collect':'Collect\ntickets\nwey you\ndone pay for',
               'pay':'Press make you pay for your ticket',
-              'card_payment':'Abeg, tap or insert card to complete purchase'},# Pidgin English
+              'card_payment':'Abeg, tap or insert card to complete purchase',
+              'successful':'Approved',
+              'unsuccessful':'Failed',
+              'print':'Printing...',
+              'finish':"Abeg collect your ticket\nThank you for using the ticket machine"},# Pidgin English
         # 'ig':{'choose':'', 
         #       'chosen':'', 
         #       'recharge':'',

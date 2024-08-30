@@ -12,7 +12,7 @@ from piticket.views.row import RowView
 class Background():
     def __init__(self, image_name, 
                 bg_color=(240, 240, 223), 
-                text_color=(255,255,255), 
+                text_color=(0,0,0), 
                 font_size=12,
                 surface=None):
         """
@@ -79,6 +79,7 @@ class Background():
                                 x=0, y=0, width=120, 
                                 height=60, padding=20,
                                 content=get_translated_text('back'),
+                                content_color=self._text_color,
                                 content_position='center',
                                 color=self._header.get_color(),
                                 position='top-center')
@@ -87,6 +88,7 @@ class Background():
                                 x=0, y=0, width=120, 
                                 height=60, padding=20,
                                 content=get_translated_text('cancel'),
+                                content_color=self._text_color,
                                 content_position='center',
                                 color=(255,0,0),
                                 position='bottom-center')
@@ -108,7 +110,7 @@ class Background():
         self.title = Box(parent=self.main_content, x=x, y=y, width=width-self._left_sidebar.margin-self._left_sidebar.width,
                                 height=60, padding=10, margin=0, border=0,
                                 border_radius=0, border_color=None, content=get_translated_text(self._name),
-                                content_color=(0,0,0), content_position='center', color=self.get_color(),
+                                content_color=self._text_color, content_position='center', color=self.get_color(),
                                 position=Box.TOPCENTER, interactable=False)
 
         self._footer = None
@@ -252,6 +254,7 @@ class ChooseBackground(Background):
                         height=140, padding=20, margin=0,
                         border_radius=10,
                         content=get_translated_text('destinations'),
+                        content_color=self._text_color,
                         content_position='center',
                         color=self._header.get_color(),
                         position=Box.TOPCENTER)
@@ -259,6 +262,7 @@ class ChooseBackground(Background):
                         x=0, y=0, width=230, 
                         height=140, padding=20, border_radius=10,
                         content=get_translated_text('collect'),
+                        content_color=self._text_color,
                         content_position='center',
                         color=self._header.get_color(),
                         position=Box.TOPRIGHT) 
@@ -274,7 +278,7 @@ class ChooseBackground(Background):
                         border_radius=0,
                         border_color=None, 
                         content=get_translated_text('quick'),
-                        content_color=(0,0,0),
+                        content_color=self._text_color,
                         content_position='center',
                         color=self.get_color(),
                         position=None,
@@ -335,7 +339,7 @@ class ChooseBackground(Background):
                         border_radius=0,
                         border_color=None, 
                         content=get_translated_text('card'),
-                        content_color=(0,0,0),
+                        content_color=self._text_color,
                         content_position='center',
                         color=self.side_bar_top.get_color(),
                         position=Box.TOPCENTER,
@@ -395,6 +399,7 @@ class ChooseBackground(Background):
                         x=0, y=0, width=150, 
                         height=100, padding=20, border=0,
                         content=get_translated_text('future'),
+                        content_color=self._text_color,
                         content_position='center',
                         color=self._header.get_color(),
                         position=Box.TOPCENTER)
@@ -561,6 +566,7 @@ class ChosenBackground(Background):
                                     x=0, y=0, width=350, 
                                     height=70, padding=20, border=0,
                                     content=get_translated_text('pay'),
+                                    content_color=self._text_color,
                                     content_position='center',
                                     color=self._header.get_color(),
                                     position=Box.BOTTOMRIGHT)
@@ -649,7 +655,7 @@ class RechargeBackground(Background):
                                 border_radius=0,
                                 border_color=(255,0,0), 
                                 content=get_translated_text('recharge'),
-                                content_color=(0,0,0),
+                                content_color=self._text_color,
                                 content_position=Box.TOPRIGHT,
                                 content_size=(),
                                 color=self.get_color(),
@@ -844,7 +850,7 @@ class PayBackground(Background):
                                 content_size=(),
                                 color=self._header.get_color(),
                                 position=Box.BOTTOMCENTER)
-    
+        self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP, popup='processing', pos=(0,0)))
         self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP, state='chosen'))
         
     def paint(self, screen):
@@ -857,3 +863,108 @@ class PayBackground(Background):
             self.price_box.draw(screen)
         if self.pay_button:
             self.pay_button.update(self.event, screen)
+
+class PaymentSuccessfulBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'successful', surface=surface)
+        self.title = None 
+        self.back_button = None 
+        self.cancel_button = None
+        self.payment_status = Box(parent=self.main_content,
+                                x=0, y=0,
+                                width=300,
+                                height=80, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=10,
+                                border_color=(255,0,0), 
+                                content=get_translated_text(self._name),
+                                content_color=self._text_color,
+                                content_position=Box.CENTER,
+                                color=self.get_color(),
+                                position=Box.CENTER)
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.payment_status:
+            self.payment_status.draw(screen)
+
+class PaymentFailedBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'unsuccessful', surface=surface)
+        self.title = None 
+        self.back_button = None 
+        self.cancel_button = None
+        self.payment_status = Box(parent=self.main_content,
+                                x=0, y=0,
+                                width=300,
+                                height=80, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=10,
+                                border_color=(255,0,0), 
+                                content=get_translated_text(self._name),
+                                content_color=self._text_color,
+                                content_position=Box.CENTER,
+                                color=self.get_color(),
+                                position=Box.CENTER)
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.payment_status:
+            self.payment_status.draw(screen)
+
+
+class PrintBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'print', surface=surface)
+        self.title = None 
+        self.back_button = None 
+        self.cancel_button = None
+        self.print_box = Box(parent=self.main_content,
+                                x=0, y=0,
+                                width=300,
+                                height=80, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=10,
+                                border_color=(255,0,0), 
+                                content=get_translated_text(self._name),
+                                content_color=self._text_color,
+                                content_position=Box.CENTER,
+                                color=self.get_color(),
+                                position=Box.CENTER)
+    
+    def resize(self, screen):
+        Background.resize(self, screen)
+        
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.print_box:
+            self.print_box.draw(screen)
+
+class FinishedBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'finish', surface=surface)
+        self.title = None 
+        self.back_button = None 
+        self.cancel_button = None
+        self.finished_box = Box(parent=self.main_content,
+                                x=0, y=0,
+                                width=self.main_content.width,
+                                height=120, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=10,
+                                border_color=(255,0,0), 
+                                content=get_translated_text(self._name),
+                                content_color=self._text_color,
+                                content_position=Box.CENTER,
+                                color=self.get_color(),
+                                position=Box.CENTER)
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.finished_box:
+            self.finished_box.draw(screen)

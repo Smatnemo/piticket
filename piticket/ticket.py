@@ -37,6 +37,8 @@ class PiApplication():
 
         self.active_state = None 
         self.previous_state = None
+
+        self.payment_status = None
         
         self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
@@ -49,6 +51,7 @@ class PiApplication():
         self.states_machine.add_state('future_tickets')
 
         self.states_machine.add_state('pay')
+        self.states_machine.add_state('process')
         self.states_machine.add_state('print')
         self.states_machine.add_state('finish')
 

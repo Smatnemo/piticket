@@ -10,6 +10,9 @@ class ViewPlugin():
     def __init__(self,plugin_manager):
         self.pm = plugin_manager 
         self.screen_lock_timer = PoolingTimer(60)
+        self.finish_view_timer = PoolingTimer(5)
+        self.print_view_timer = PoolingTimer(10)
+        self.process_view_timer = PoolingTimer(5)
         # Default time for pop up box
         self.timeout = 10
         self.modified_ticket=None
@@ -116,6 +119,7 @@ class ViewPlugin():
         """"""
         win.drop_cache()
 
+
     @hookimpl
     def state_future_tickets_enter(self,cfg,app,win):
         """"""
@@ -160,6 +164,9 @@ class ViewPlugin():
         """"""
         event = app.find_button_event(events)
         win.show_pay(event, self.modified_ticket)
+        if event:
+            if hasattr(event, 'popup') and event.popup:
+                win.show_popup_processing_box('process',app)
 
     @hookimpl
     def state_pay_validate(self,cfg,app,win,events):
@@ -169,4 +176,66 @@ class ViewPlugin():
 
     @hookimpl 
     def state_pay_exit(self,cfg,app,win):
+        """"""
+
+
+
+    @hookimpl
+    def state_process_enter(self,cfg,app,win):
+        """"""
+        self.process_view_timer.start()
+        win.show_payment_status(successful=app.payment_status)
+
+    @hookimpl
+    def state_process_do(self,cfg,app,win):
+        """"""
+        # Called here to keep updating time
+        win.show_payment_status(successful=app.payment_status)
+
+    @hookimpl
+    def state_process_validate(self,cfg,app,win,events):
+        if self.process_view_timer.is_timeout():
+            if app.payment_status:
+                return 'print'
+            else:
+                return 'pay'
+
+    @hookimpl 
+    def state_process_exit(self,cfg,app,win):
+        """"""
+
+
+    @hookimpl
+    def state_print_enter(self,cfg,app,win):
+        """"""
+        self.print_view_timer.start()
+        win.show_printing()
+
+    @hookimpl 
+    def state_print_do(self,win):
+        """"""
+        win.show_printing()
+
+    @hookimpl
+    def state_print_validate(self,cfg,app,win,events):
+        if self.print_view_timer.is_timeout():
+            return 'finish'
+
+    @hookimpl 
+    def state_print_exit(self,cfg,app,win):
+        """"""
+
+    @hookimpl
+    def state_finish_enter(self,cfg,app,win):
+        """"""
+        self.finish_view_timer.start()
+        win.show_finish()
+
+    @hookimpl
+    def state_finish_validate(self,cfg,app,win,events):
+        if self.finish_view_timer.is_timeout():
+            return 'wait'
+
+    @hookimpl 
+    def state_finish_exit(self,cfg,app,win):
         """"""

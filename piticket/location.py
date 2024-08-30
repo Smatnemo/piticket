@@ -1,5 +1,6 @@
 from functools import partial
 from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderUnavailable
 from pprint import pprint
 # from piticket import project_name
 states = ['Lagos','Abuja FCT', 'Kaduna']
@@ -21,7 +22,11 @@ class Geolocator(Nominatim):
     def __init__(self,user_agent):
         Nominatim.__init__(self,user_agent=user_agent)
 
-
-location = locator('Lagos')
-if location=='Laos':
+try:
+    location = locator('Lagos')
+    if location=='Laos':
+        location = 'Lagos'
+except GeocoderUnavailable:
+    # if it cannot automatically locate itself..
+    # Write code to enter it manually
     location = 'Lagos'

@@ -125,50 +125,57 @@ def state_pay_exit(cfg,app,win):
     """"""
 
 
-# @hookspec 
-# def state_recharge_enter(app,win):
-#     """"""
 
-# @hookspec 
-# def state_recharge_do(app,win,events):
-#     """"""
+@hookspec 
+def state_process_enter(cfg,app,win):
+    """Display payment status. Either successful or Failed. Return to pay state if 
+        failed and go to print state if successful.
+    """
 
-# @hookspec(firstresult=True) 
-# def state_recharge_validate(app,win,events):
-#     """"""
+@hookspec 
+def state_process_do(cfg,app,win,events):
+    """"""
 
-# @hookspec 
-# def state_recharge_exit(app,win):
-#     """"""
+@hookspec(firstresult=True) 
+def state_process_validate(cfg,app,win,events):
+    """"""
 
-# @hookspec 
-# def state_print_enter(app,win):
-#     """"""
+@hookspec 
+def state_process_exit(cfg,app,win):
+    """"""
 
-# @hookspec 
-# def state_print_do(app,win,events):
-#     """"""
 
-# @hookspec(firstresult=True) 
-# def state_print_validate(app,win,events):
-#     """"""
 
-# @hookspec 
-# def state_print_exit(app,win):
-#     """"""
+@hookspec 
+def state_print_enter(cfg,app,win):
+    """"""
 
-# @hookspec 
-# def state_finish_enter(app,win):
-#     """"""
+@hookspec 
+def state_print_do(cfg,app,win,events):
+    """"""
 
-# @hookspec 
-# def state_finish_do(app,win,events):
-#     """"""
+@hookspec(firstresult=True) 
+def state_print_validate(cfg,app,win,events):
+    """"""
 
-# @hookspec(firstresult=True) 
-# def state_finish_validate(app,win,events):
-#     """"""
+@hookspec 
+def state_print_exit(cfg,app,win):
+    """"""
 
-# @hookspec 
-# def state_finish_exit(app,win):
-#     """"""
+
+
+@hookspec 
+def state_finish_enter(cfg,app,win):
+    """"""
+
+@hookspec 
+def state_finish_do(cfg,app,win,events):
+    """"""
+
+@hookspec(firstresult=True) 
+def state_finish_validate(cfg,app,win,events):
+    """"""
+
+@hookspec 
+def state_finish_exit(cfg,app,win):
+    """"""

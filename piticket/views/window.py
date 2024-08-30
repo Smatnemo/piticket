@@ -1,6 +1,7 @@
 import pygame 
 import os
 
+from pygame.event import post, Event
 from piticket.views import background
 from piticket.utils import LOGGER
 from piticket.views.box import PopUpBox, PopUpBoxProcessing
@@ -12,7 +13,7 @@ class PiWindow():
 
     def __init__(self, title,
                 bg_color=(255,255,255),
-                text_color=(255,255,255),
+                text_color=(0,0,0),
                 size=(1280, 1000)):
 
         self.bg_color = bg_color 
@@ -36,7 +37,8 @@ class PiWindow():
         self.current_background = None
 
         self._popup_box = None
-        self._popup_box_process = PopUpBoxProcessing(event=None, parent=self.surface,gif_image='Spinner_transparent')
+        self._popup_box_process = None 
+        
 
     def _update_background(self, bkgd, event=None):
         # This allows a background to be initialized once and saved in the dictionary, backgrounds
@@ -92,9 +94,22 @@ class PiWindow():
         self._update_background(background.RechargeBackground(self.surface), event)
 
     def show_pay(self, event, modified_ticket):
-        """
+        """Display instructions for payment
         """
         self._update_background(background.PayBackground(modified_ticket, self.surface), event)
+
+    def show_printing(self):
+        """Display when printing ticket
+        """
+        self._update_background(background.PrintBackground(self.surface))
+
+    def show_payment_status(self, successful=True):
+        """Display the status of the payment.
+        """
+        if successful:
+            self._update_background(background.PaymentSuccessfulBackground(self.surface))
+        else:
+            self._update_background(background.PaymentFailedBackground(self.surface))
         
     def show_popup_box(self, state_name, timeout, app):
         """Show a pop up box on any state.
@@ -120,6 +135,35 @@ class PiWindow():
             pygame.display.update()
 
         self._popup_box = None
+    
+    def show_popup_processing_box(self, state_name, app):
+                
+        self._popup_box = PopUpBoxProcessing(event=Event(pygame.MOUSEBUTTONUP,), 
+                                            parent=self.surface,
+                                            gif_image='Spinner_transparent',
+                                            x=0, y=0,
+                                            width=300, height=200,
+                                            position='center',
+                                            margin=20, padding=10,
+                                            border=1, border_radius=3,
+                                            border_color=(0,0,0),
+                                            content='Processing payment',
+                                            content_color=self.text_color,
+                                            content_position='top-center',
+                                            content_size=(),
+                                            color=self.bg_color,
+                                            interactable=False)
+        self._popup_box.triggered(post, Event(pygame.MOUSEBUTTONUP, state=state_name))
+        app.payment_status = True
+        while self._popup_box.started:
+            events = pygame.event.get()
+            event = app.find_button_event(events)
+            self._popup_box.update(event, self.surface)
+            pygame.display.update()
+        self._popup_box = None
+
+    def show_finish(self):
+        self._update_background(background.FinishedBackground(self.surface))
 
     def drop_cache(self):
         """Drop all cached background and foreground to force refreshing the view.
