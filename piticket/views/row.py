@@ -17,14 +17,14 @@ class Row(Button):
                 position='center', margin=10, padding=10,
                 border=2, border_radius=15,
                 border_color=(253, 255, 0),
-                content=list(row), content_color=(255,255,255),
+                content=row, content_color=(255,255,255),
                 content_position='top-left',
                 color=color, clicked_color=(0,191,0),
                 clicked_border_color=(0,127,0),
                 hovered_color=(0,127,0),
                 hovered_border_color=(253, 255, 0))
         
-        self.chosen = False
+        # self.chosen = False
         self.additional_color = additional_color
 
 
@@ -33,10 +33,10 @@ class Row(Button):
         if self.content is not None:
             # First item top-left
             rect = pygame.Rect((self.rect.x,self.rect.y,self.rect.width,40))
-            content_surfaces=Button.position_content(self, rect=rect, content=location+' - '+self.content[0],align=self.TOPLEFT)
-            content_surfaces.extend(Button.position_content(self, rect=rect, content=self.content[1],align=self.TOPRIGHT))
+            content_surfaces=Button.position_content(self, rect=rect, content=location+' - '+self.content['destination'],align=self.TOPLEFT)
+            content_surfaces.extend(Button.position_content(self, rect=rect, content=self.content['price']+' '+self.content['currency'],align=self.TOPRIGHT))
             rect = pygame.Rect((self.rect.x,self.rect.y+rect.height-self.padding,self.rect.width,35))
-            content_surfaces.extend(Button.position_content(self, rect=rect, content=self.content[2],align=self.BOTTOMLEFT))
+            content_surfaces.extend(Button.position_content(self, rect=rect, content=self.content['ticket_type'],align=self.BOTTOMLEFT))
         self.content_surfaces = content_surfaces
 
     def draw(self, screen):
@@ -75,7 +75,6 @@ class RowView(Box):
         # rows is a dictionary. pass only key which is a tuple
         # Calculate width, height for each row based on the dimensions of the view, which 
         # which is the parent of the rows created below
-        width = width
         height = height//self.offset
         self.row_boxes = [Box(parent=self, x=0, y=i*height, 
                             width=width, height=height,
@@ -91,11 +90,11 @@ class RowView(Box):
                         width=width-margin,
                         height=height-margin,
                         color=(0, 106, 78),
-                        row=row) for row_box, row in zip(self.row_boxes, rows)]
+                        row=rows[row]) for row_box, row in zip(self.row_boxes, rows)]
         # post event when clicked
         for row in self.rows:
-            row.clicked(pygame.event.post, pygame.event.Event(pygame.MOUSEBUTTONUP,state='chosen',choice=tuple(row.content)))
-        self.chosen_row = None
+            row.clicked(pygame.event.post, pygame.event.Event(pygame.MOUSEBUTTONUP,state='chosen',choice=row.content))
+        # self.chosen_row = None
 
     def update(self, event, screen):
         Box.draw(self, screen)

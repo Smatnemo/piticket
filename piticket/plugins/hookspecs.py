@@ -3,6 +3,11 @@ from piticket import project_name
 
 hookspec = HookspecMarker(project_name)
 
+@hookspec(firstresult=True)
+def piticket_setup_ticket_factory(factory):
+    """Setup factory for building ticket
+    """
+    
 @hookspec 
 def state_wait_enter(cfg,app,win):
     """"""
@@ -109,6 +114,26 @@ def state_future_tickets_exit(cfg,app,win):
 
 
 @hookspec 
+def state_process_enter(cfg,app,win):
+    """Display processing while building the ticket.
+    """
+
+@hookspec 
+def state_process_do(cfg,app,win,events):
+    """"""
+
+@hookspec(firstresult=True) 
+def state_process_validate(cfg,app,win,events):
+    """"""
+
+@hookspec 
+def state_process_exit(cfg,app,win):
+    """"""
+
+
+
+
+@hookspec 
 def state_pay_enter(cfg,app,win):
     """"""
 
@@ -127,21 +152,21 @@ def state_pay_exit(cfg,app,win):
 
 
 @hookspec 
-def state_process_enter(cfg,app,win):
+def state_payment_process_enter(cfg,app,win):
     """Display payment status. Either successful or Failed. Return to pay state if 
         failed and go to print state if successful.
     """
 
 @hookspec 
-def state_process_do(cfg,app,win,events):
+def state_payment_process_do(cfg,app,win,events):
     """"""
 
 @hookspec(firstresult=True) 
-def state_process_validate(cfg,app,win,events):
+def state_payment_process_validate(cfg,app,win,events):
     """"""
 
 @hookspec 
-def state_process_exit(cfg,app,win):
+def state_payment_process_exit(cfg,app,win):
     """"""
 
 

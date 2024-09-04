@@ -3,6 +3,7 @@ from pluggy import PluginManager
 # Change only the name of the project here when using in another project
 from piticket.plugins import hookspecs
 from piticket.plugins.view_plugin import ViewPlugin
+from piticket.plugins.printer_plugin import PrinterPlugin
 
 def create_plugin_manager(project_name):
     plugin_manager = PiPluginManager(project_name)
@@ -56,7 +57,8 @@ class PiPluginManager(PluginManager):
                 LOGGER.debug("Plugin found at '%s",path)
                 plugins.append(plugin)
             
-        plugins += [ViewPlugin(self)]
+        plugins += [ViewPlugin(self), # Last called
+                    PrinterPlugin(self)] # LIFO, First Called
 
         for plugin in plugins:
             self.register(plugin, name=getattr(plugin, '', None))

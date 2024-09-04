@@ -58,6 +58,7 @@ class PiWindow():
         else:
             self._update_background(background.IntroBackground(self.surface))
 
+    
     def show_choice(self, event, tickets={}, selected=None):
         """Display all choices when nothing is selected
         :param event: filtered event for button actions
@@ -70,7 +71,7 @@ class PiWindow():
         if not selected:
             self._update_background(background.ChooseBackground(tickets, self.surface), event)
         else:
-            self._update_background(background.ChosenBackground(tickets[selected], self.surface), event)
+            self._update_background(background.ChosenBackground(selected, self.surface), event)
 
     def show_calendar(self, event):
         """Display dates using a calendar.
@@ -79,6 +80,11 @@ class PiWindow():
         """
         self._update_background(background.CalendarBackground(self.surface), event)
 
+    def show_processing(self):
+        """Display while building ticket
+        """
+        self._update_background(background.ProcessingBackground(self.surface))
+        
     def show_translations(self, event):
         """Display a list of available translations. Choose a language
         :param event: event for button effects

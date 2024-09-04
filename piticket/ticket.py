@@ -3,12 +3,15 @@ import pygame
 import sys
 import tempfile
 import logging
+import time
 
 import os.path as osp
 
+from datetime import datetime
 PROJECT_DIR = osp.abspath(osp.dirname(__file__))
 PACKAGE_DIR, project_name = osp.split(PROJECT_DIR)
 sys.path.insert(0, PACKAGE_DIR)
+
 
 from piticket import language
 from piticket.utils import *
@@ -16,15 +19,18 @@ from piticket.views import PiWindow
 from piticket.states import StatesMachine
 from piticket.config import PiConfigParser
 from piticket.plugins import create_plugin_manager
+from piticket.printer import Printer
 
+
+d = datetime.fromtimestamp(time.time())
 # The Symbol for Naira alt Code is 8358.
 # Naira symbol not showing in render
 # Dummy data for RowView
-travels = {('Nasarawa','10000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Nasarawa','date_of_travel':'09:18','route':'ANY PERMITTED','price':'10000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'1'}},
-('Kaduna','20000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Kaduna','date_of_travel':'10:18','route':'ANY PERMITTED','price':'20000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'0'}},
-('Niger','15000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Niger','date_of_travel':'12:18','route':'ANY PERMITTED','price':'15000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'2'}},
-('Kogi','30000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Kogi','date_of_travel':'13:50','route':'ANY PERMITTED','price':'30000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'3','children (5-15)':'0'}},
-('Ibadan','12000','Standard off-peak day return'):{'departure_station':'Lagos','destination':'Ibadan','date_of_travel':'15:60','route':'ANY PERMITTED','price':'12000','railcard':'25-30','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'3'}}}
+travels = {('Nasarawa','10000','Standard off-peak day return'):{'name':'','departure_station':'Lagos','destination':'Nasarawa','date':d.strftime('%d/%m/%y'),'departure_time':'09:18','arrival_time':'11:18','train':'','carriage':'','platform':'','seat':'','route':'ANY PERMITTED','price':'10000', 'currency':'NGN','railcard':'25-30','class':'First','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'1'}},
+            ('Kaduna','20000','Standard off-peak day return'):{'name':'','departure_station':'Lagos','destination':'Kaduna','date':d.strftime('%d/%m/%y'),'departure_time':'10:18','arrival_time':'12:18','train':'','carriage':'','platform':'','seat':'','route':'ANY PERMITTED','price':'20000', 'currency':'NGN','railcard':'25-30','class':'Economy','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'1','children (5-15)':'0'}},
+            ('Niger','15000','Standard off-peak day return'):{'name':'','departure_station':'Lagos','destination':'Niger','date':d.strftime('%d/%m/%y'),'departure_time':'12:18','arrival_time':'14:18','train':'','carriage':'','platform':'','seat':'','route':'ANY PERMITTED','price':'15000', 'currency':'NGN','railcard':'25-30','class':'First','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'2'}},
+            ('Kogi','30000','Standard off-peak day return'):{'name':'','departure_station':'Lagos','destination':'Kogi','date':d.strftime('%d/%m/%y'),'departure_time':'13:50','arrival_time':'15:30','train':'','carriage':'','platform':'','seat':'','route':'ANY PERMITTED','price':'30000', 'currency':'NGN', 'railcard':'25-30','class':'First','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'3','children (5-15)':'0'}},
+            ('Ibadan','12000','Standard off-peak day return'):{'name':'','departure_station':'Lagos','destination':'Ibadan','date':d.strftime('%d/%m/%y'),'departure_time':'15:50','arrival_time':'17:58','train':'','carriage':'','platform':'','seat':'','route':'ANY PERMITTED','price':'12000', 'currency':'NGN','railcard':'25-30','class':'First','ticket_type':'Standard off-peak day return','passengers':{'adult(s)':'2','children (5-15)':'3'}}}
 # For choose state and quick display use destination, type, price
 
 class PiApplication():
@@ -39,6 +45,17 @@ class PiApplication():
         self.previous_state = None
 
         self.payment_status = None
+
+        self.modified_ticket = None
+
+        self.ticket_template = 'nrc_trainticket.xml'
+
+        self.ticket_file = None
+
+        self.printer = Printer()
+        self.print_copies = 1
+
+        self.count = 0
         
         self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
@@ -50,14 +67,26 @@ class PiApplication():
         self.states_machine.add_state('translate')
         self.states_machine.add_state('future_tickets')
 
-        self.states_machine.add_state('pay')
         self.states_machine.add_state('process')
+        self.states_machine.add_state('pay')
+        self.states_machine.add_state('payment_process')
         self.states_machine.add_state('print')
         self.states_machine.add_state('finish')
 
     def _initialize(self):
         pass 
     
+    @property
+    def ticket_file(self):
+        return self._ticket_file
+
+    @ticket_file.setter 
+    def ticket_file(self, value):
+        if not value:
+            self._ticket_file = value
+        else:
+            self._ticket_file = f"/home/pi/Pictures/ticket_{value}.png"
+
     def post_event(self, state_name):
         """Place an event in the event list.
         """
@@ -142,6 +171,12 @@ def main():
     language.change_language(config, config.get('GENERAL','language'))
     language.init('~/.config/piticket/translations.cfg', True)
 
+    # Create a directory for tickets under the Pictures directory
+    # use config object to save the directory
+    ticket_dir = '~/Pictures/piticket/'
+    # Check if directory exists 
+    if not osp.isdir(ticket_dir):
+        os.makedirs(ticket_dir)
     app = PiApplication(pm, config)
     app.main_loop()
 

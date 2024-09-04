@@ -9,9 +9,9 @@ import os.path as osp
 
 import pygame 
 from PIL import Image 
-
 from piticket.utils import LOGGER
 
+PRINTER_TASKS_UPDATED = pygame.USEREVENT + 1
 
 class Printer:
     def __init__(self, name='default', max_pages=-1, options=None, counters=None):

@@ -925,8 +925,8 @@ class Field(Box):
                 margin=margin, padding=padding,
                 border=border, border_radius=border_radius,
                 border_color=border_color, content=None,
-                content_color=content_color, 
-                content_position=content_position, 
+                content_color=(), 
+                content_position=(), 
                 content_size=(),
                 color=color,
                 interactable=interactable)

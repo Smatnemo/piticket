@@ -1,5 +1,6 @@
 import json
 import pygame 
+import os.path as osp
 from pygame.event import Event, post
 from piticket.videoplayer import VideoPygame
 from piticket.utils import multiline_text_to_surfaces
@@ -439,7 +440,7 @@ class ChosenBackground(Background):
         self.chosen_ticket = chosen_ticket
         label_font = 40
         label_width = 200
-        height = self.main_content.height//12
+        height = self.main_content.height//14
         self.departure_field = Field(parent=self.main_content,
                                     x=0,y=self.title.height,
                                     width=self.main_content.width,
@@ -449,7 +450,8 @@ class ChosenBackground(Background):
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Departure station',
                                     content=chosen_ticket['departure_station'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
 
@@ -462,7 +464,8 @@ class ChosenBackground(Background):
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Destination station',
                                     content=chosen_ticket['destination'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
 
@@ -474,13 +477,41 @@ class ChosenBackground(Background):
                                     margin=0, padding=0,
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Date of travel',
-                                    content=chosen_ticket['date_of_travel'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content=chosen_ticket['date'],
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
 
-        self.route_field = Field(parent=self.main_content,
+        self.departure_time_field = Field(parent=self.main_content,
                                     x=0,y=self.date_field.y+self.date_field.height,
+                                    width=self.main_content.width,
+                                    height=height,
+                                    position=None,
+                                    margin=0, padding=0,
+                                    border=0, border_radius=0,
+                                    border_color=(255,0,0), label='Departure time',
+                                    content=chosen_ticket['departure_time'],
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
+                                    color=self.get_color(),
+                                    button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
+
+        self.arrival_time_field = Field(parent=self.main_content,
+                                    x=0,y=self.departure_time_field.y+self.departure_time_field.height,
+                                    width=self.main_content.width,
+                                    height=height,
+                                    position=None,
+                                    margin=0, padding=0,
+                                    border=0, border_radius=0,
+                                    border_color=(255,0,0), label='Arrival time',
+                                    content=chosen_ticket['arrival_time'],
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
+                                    color=self.get_color())
+
+        self.route_field = Field(parent=self.main_content,
+                                    x=0,y=self.arrival_time_field.y+self.arrival_time_field.height,
                                     width=self.main_content.width,
                                     height=height,
                                     position=None,
@@ -488,7 +519,8 @@ class ChosenBackground(Background):
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Route',
                                     content=chosen_ticket['route'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color())
 
         self.tickettype_field = Field(parent=self.main_content,
@@ -500,12 +532,27 @@ class ChosenBackground(Background):
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Ticket type',
                                     content=chosen_ticket['ticket_type'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
+                                    color=self.get_color(),
+                                    button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
+                                    
+        self.class_field = Field(parent=self.main_content,
+                                    x=0,y=self.tickettype_field.y+self.tickettype_field.height,
+                                    width=self.main_content.width,
+                                    height=height,
+                                    position=None,
+                                    margin=0, padding=0,
+                                    border=0, border_radius=0,
+                                    border_color=(255,0,0), label='Class',
+                                    content=chosen_ticket['class'],
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
 
         self.railcard_field = Field(parent=self.main_content,
-                                    x=0,y=self.tickettype_field.y+self.tickettype_field.height,
+                                    x=0,y=self.class_field.y+self.class_field.height,
                                     width=self.main_content.width,
                                     height=height,
                                     position=None,
@@ -513,7 +560,8 @@ class ChosenBackground(Background):
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Railcard',
                                     content=chosen_ticket['railcard'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':(0, 106, 78),'content':'Change','position':Box.CENTER,'size':{'width':100,'height':40}})
 
@@ -528,7 +576,8 @@ class ChosenBackground(Background):
                                     increase_decrease=True,
                                     min_max={'min':1,'max':10},
                                     content='1',
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':self._header.get_color(),'content':'-','position':Box.CENTERLEFT,'size':{'width':50,'height':40}},
                                     button2_config={'color':self._header.get_color(),'content':'+','position':Box.CENTERRIGHT,'size':{'width':50,'height':40}})
@@ -544,22 +593,23 @@ class ChosenBackground(Background):
                                     increase_decrease=True,
                                     min_max={'min':0,'max':6},
                                     content='0',
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
+                                    content_position=Box.CENTERLEFT,content_color=self._text_color,
+                                    label_size=(label_width,label_font),
                                     color=self.get_color(),
                                     button1_config={'color':self._header.get_color(),'content':'-','position':Box.CENTERLEFT,'size':{'width':50,'height':40}},
                                     button2_config={'color':self._header.get_color(),'content':'+','position':Box.CENTERRIGHT,'size':{'width':50,'height':40}})
 
         self.total_field = Field(parent=self.main_content,
                                     x=0,y=self.children_field.y+self.children_field.height,
-                                    width=self.main_content.width,
+                                    width=self.main_content.width//2,
                                     height=height,
                                     position=None,
                                     margin=0, padding=0,
                                     border=0, border_radius=0,
                                     border_color=(255,0,0), label='Total',
-                                    content=chosen_ticket['price'],
-                                    content_position=Box.CENTERLEFT,label_size=(label_width,label_font),
-                                    color=self.get_color())
+                                    content=chosen_ticket['price']+' '+chosen_ticket['currency'],
+                                    content_position=Box.CENTERLEFT, content_color=self._text_color,
+                                    label_size=(label_width,label_font), color=self.get_color())
 
         # Create button to for payment
         self.pay_button = Button(parent=self.main_content, 
@@ -570,16 +620,25 @@ class ChosenBackground(Background):
                                     content_position='center',
                                     color=self._header.get_color(),
                                     position=Box.BOTTOMRIGHT)
-        modified_ticket = {'departure_station':self.departure_field.input_box,
+
+        modified_ticket = {'name':'',
+                            'departure_station':self.departure_field.input_box,
                             'destination':self.destination_field.input_box,
-                            'date_of_travel':self.date_field.input_box,
+                            'date':self.date_field.input_box.content,
+                            'departure_time':self.departure_time_field.input_box,
+                            'arrival_time':self.arrival_time_field.input_box,
+                            'carriage':chosen_ticket['carriage'],
+                            'platform':chosen_ticket['platform'],
+                            'train':chosen_ticket['train'],
+                            'seat':chosen_ticket['seat'],
                             'route':self.route_field.input_box,
                             'price':self.total_field.input_box,
                             'railcard':self.railcard_field.input_box,
                             'ticket_type':self.tickettype_field.input_box,
+                            'class': self.class_field.input_box,
                             'adult(s)':self.adults_field.input_box,
                             'children (5-15)':self.children_field.input_box}
-        self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='pay',ticket=modified_ticket))
+        self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP,state='process',ticket=modified_ticket))
 
 
     def __str__(self):
@@ -587,6 +646,8 @@ class ChosenBackground(Background):
 
     def resize(self, screen):
         Background.resize(self, screen)
+
+        # Recalculate the total field based on number of adults or children
         content = str(int(self.chosen_ticket['price'])*int(self.adults_field.input_box.content)+int(self.children_field.input_box.content)*int(0.7*int(self.chosen_ticket['price'])))
         content = list(content)
         if len(content) > 3:
@@ -594,7 +655,7 @@ class ChosenBackground(Background):
         content_str = ''
         for i in content:
             content_str += i
-        self.total_field.input_box.content = content_str
+        self.total_field.input_box.content = content_str +' '+ self.chosen_ticket['currency']
 
     def paint(self, screen):
         Background.paint(self, screen)
@@ -604,10 +665,16 @@ class ChosenBackground(Background):
             self.destination_field.update(self.event,screen)
         if self.date_field:
             self.date_field.update(self.event,screen)
+        if self.departure_time_field:
+            self.departure_time_field.update(self.event,screen)
+        if self.arrival_time_field:
+            self.arrival_time_field.update(self.event,screen)
         if self.route_field:
             self.route_field.update(self.event,screen)
         if self.tickettype_field:
             self.tickettype_field.update(self.event,screen)
+        if self.class_field:
+            self.class_field.update(self.event,screen)
         if self.railcard_field:
             self.railcard_field.update(self.event,screen)
         if self.adults_field:
@@ -618,6 +685,34 @@ class ChosenBackground(Background):
             self.total_field.update(self.event,screen)
         if self.pay_button:
             self.pay_button.update(self.event, screen)
+
+class ProcessingBackground(Background):
+    def __init__(self, surface):
+        Background.__init__(self, 'process', surface=surface)
+        self.title = None 
+        self.back_button = None 
+        self.cancel_button = None
+        self.processing_box = Box(parent=self.main_content,
+                                x=0, y=0,
+                                width=300,
+                                height=80, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=10,
+                                border_color=(255,0,0), 
+                                content=get_translated_text(self._name),
+                                content_color=self._text_color,
+                                content_position=Box.CENTER,
+                                color=self.get_color(),
+                                position=Box.CENTER)
+    
+        
+    def paint(self, screen):
+        Background.paint(self, screen)
+        if self.processing_box:
+            self.processing_box.draw(screen)
+
 
 class CalendarBackground(Background):
     def __init__(self, surface):
@@ -638,12 +733,28 @@ class RechargeBackground(Background):
                                 border=0,
                                 border_radius=0,
                                 border_color=(255,0,0), 
+                                content=None,
+                                content_color=(0,0,0),
+                                content_position=Box.TOPCENTER,
+                                content_size=(),
+                                color=self.get_color(),
+                                position=Box.BOTTOMCENTER,
+                                interactable=False)
+        self.recharge_img = Box(parent=self.recharge_box,
+                                x=0, y=0,
+                                width=900,
+                                height=600, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=0,
+                                border_color=(255,0,0), 
                                 content=get_filename('recharge.jpg'),
                                 content_color=(0,0,0),
-                                content_position=Box.TOPLEFT,
+                                content_position=Box.CENTER,
                                 content_size=(900,600),
                                 color=self.get_color(),
-                                position=Box.BOTTOMLEFT,
+                                position=Box.TOPCENTER,
                                 interactable=False)
         self.recharge_text = Box(parent=self.recharge_box,
                                 x=0, y=0,
@@ -656,15 +767,15 @@ class RechargeBackground(Background):
                                 border_color=(255,0,0), 
                                 content=get_translated_text('recharge'),
                                 content_color=self._text_color,
-                                content_position=Box.TOPRIGHT,
+                                content_position=Box.CENTER,
                                 content_size=(),
                                 color=self.get_color(),
-                                position=Box.BOTTOMRIGHT,
+                                position=Box.BOTTOMCENTER,
                                 interactable=False)
         self.recharge_arrow = Box(parent=self.recharge_box,
-                                x=0, y=self.recharge_box.get_content_rect().height,
+                                x=0, y=self.recharge_img.get_rect().height,
                                 width=self.recharge_text.width,
-                                height=self.recharge_box.height-self.recharge_box.get_content_rect().height-self.recharge_text.height, 
+                                height=self.recharge_box.height-self.recharge_img.get_rect().height-self.recharge_text.height, 
                                 padding=10,
                                 margin=0,
                                 border=0,
@@ -682,6 +793,8 @@ class RechargeBackground(Background):
         Background.paint(self, screen)
         if self.recharge_box:
             self.recharge_box.draw(screen)
+        if self.recharge_img:
+            self.recharge_img.draw(screen)
         if self.recharge_arrow:
             self.recharge_arrow.draw(screen)
         if self.recharge_text:
@@ -784,9 +897,9 @@ class TranslateBackground(Background):
             self.pidgin_text.draw(screen)
 
 class PayBackground(Background):
-    def __init__(self, modified_ticket, surface):
+    def __init__(self, ticket_file, surface):
         Background.__init__(self, 'card_payment', surface=surface)
-        self.modified_ticket = modified_ticket
+        self.ticket_file = ticket_file
         self.pay_box = Box(parent=self.main_content,
                                 x=0, y=0,
                                 width=self.main_content.width,
@@ -805,8 +918,8 @@ class PayBackground(Background):
                                 interactable=False)
         self.nfc_box = Box(parent=self.pay_box,
                                 x=0, y=0,
-                                width=300,
-                                height=240, 
+                                width=200,
+                                height=160, 
                                 padding=10,
                                 margin=0,
                                 border=0,
@@ -815,23 +928,23 @@ class PayBackground(Background):
                                 content=get_filename('nfc.png'),
                                 content_color=(0,0,0),
                                 content_position=Box.TOPCENTER,
-                                content_size=(300,240),
+                                content_size=(200,160),
                                 color=self.get_color(),
                                 position=Box.TOPCENTER,
                                 interactable=False)
-        self.price_box = Box(parent=self.pay_box,
+        self.ticket_box = Box(parent=self.pay_box,
                                 x=0, y=0,
-                                width=300,
-                                height=240, 
+                                width=750,
+                                height=450, 
                                 padding=10,
                                 margin=0,
                                 border=0,
-                                border_radius=0,
+                                border_radius=15,
                                 border_color=(255,0,0), 
-                                content=modified_ticket['price'].content,
+                                content=get_filename(ticket_file),
                                 content_color=(0,0,0),
                                 content_position=Box.CENTER,
-                                content_size=(500,400),
+                                content_size=(750,450),
                                 color=self.get_color(),
                                 position=Box.CENTER,
                                 interactable=False)
@@ -852,15 +965,18 @@ class PayBackground(Background):
                                 position=Box.BOTTOMCENTER)
         self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP, popup='processing', pos=(0,0)))
         self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP, state='chosen'))
-        
+    
+    def __str__(self):
+        return Background.__str__(self)+f'{self.ticket_file}'
+
     def paint(self, screen):
         Background.paint(self, screen)
         if self.pay_box:
             self.pay_box.draw(screen)
         if self.nfc_box:
             self.nfc_box.draw(screen)
-        if self.price_box:
-            self.price_box.draw(screen)
+        if self.ticket_box:
+            self.ticket_box.draw(screen)
         if self.pay_button:
             self.pay_button.update(self.event, screen)
 

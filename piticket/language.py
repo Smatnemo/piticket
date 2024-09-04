@@ -29,6 +29,7 @@ DEFAULT = {
               'successful':'Approved',
               'unsuccessful':'Failed',
               'print':'Printing...',
+              'process':'Processing...',
               'finish':'Please collect your ticket\nThank you for using the ticket machine'},# English
         'fr':{'choose':'Bienvenue, écran tactile pour continuer', 
               'chosen':'Les détails de votre voyage', 
@@ -49,6 +50,7 @@ DEFAULT = {
               'successful':'Approuvé',
               'unsuccessful':'Échoué',
               'print':'Impression...',
+              'process':'Traitement...',
               'finish':"Merci de récupérer votre billet\nMerci d'utiliser le distributeur de billets"},# French
         'pn':{'choose':'Welcome, abeg touch screen to continue', 
               'chosen':'Your journey details', 
@@ -69,6 +71,7 @@ DEFAULT = {
               'successful':'Approved',
               'unsuccessful':'Failed',
               'print':'Printing...',
+              'process':'Processing...',
               'finish':"Abeg collect your ticket\nThank you for using the ticket machine"},# Pidgin English
         # 'ig':{'choose':'', 
         #       'chosen':'', 
