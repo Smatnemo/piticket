@@ -53,6 +53,11 @@ class PiApplication():
         self.ticket_file = None
 
         self.printer = Printer()
+        if self.printer.is_connected():
+            LOGGER.info('connected')
+        else:
+            LOGGER.warning('Not connected')
+    
         self.print_copies = 1
 
         self.count = 0
@@ -75,17 +80,6 @@ class PiApplication():
 
     def _initialize(self):
         pass 
-    
-    @property
-    def ticket_file(self):
-        return self._ticket_file
-
-    @ticket_file.setter 
-    def ticket_file(self, value):
-        if not value:
-            self._ticket_file = value
-        else:
-            self._ticket_file = f"/home/pi/Pictures/ticket_{value}.png"
 
     def post_event(self, state_name):
         """Place an event in the event list.
@@ -107,18 +101,18 @@ class PiApplication():
     
     def find_change_event(self, events):
         for event in events:
-            if event.type == pygame.MOUSEBUTTONUP and hasattr(event, 'state'):
+            if (event.type == pygame.MOUSEBUTTONUP or event.type == pygame.FINGERUP) and hasattr(event, 'state'):
                 return event
         return 
 
-    def find_button_event(self, events):
-        """Filter event for button effects and trigger
+    def process_payment(self, events):
+        """Filter events for starting the payment process
+        :param events: events from the event queue
+        :type events: list
         """
         for event in events:
-            if (event.type == pygame.MOUSEBUTTONDOWN\
-                    or event.type == pygame.MOUSEBUTTONUP\
-                    or event.type == pygame.MOUSEMOTION) and not hasattr(event,'state'):
-                return event 
+            if event.type == pygame.MOUSEBUTTONUP and hasattr(event, 'popup'):
+                return event
         return
         
     def main_loop(self):

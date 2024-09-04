@@ -1,6 +1,7 @@
 
 import time 
 import tempfile
+import os
 import os.path as osp
 from datetime import datetime
 from piticket import hookimpl
@@ -17,8 +18,7 @@ class PrinterPlugin:
 
     def print_ticket(self, app):
         LOGGER.info("Send final ticket to printer")
-        if osp.isfile(app.ticket_file):
-            app.printer.print_file(app.ticket_file, app.print_copies)
+        app.printer.print_file(app.ticket_file.name, app.print_copies)
         app.count += 1
 
     def build_ticket(self, app):
@@ -30,8 +30,14 @@ class PrinterPlugin:
         default_factory = get_ticket_factory(get_filename(app.ticket_template), app.modified_ticket)
         
         factory = self._pm.hook.piticket_setup_ticket_factory(factory=default_factory)
-        app.ticket_file = time_stamp[-8:]
-        factory.save(app.ticket_file)
+
+        # Create the name of the file using Hour, Minute, Seconds of the time stamp
+        app.ticket_file = tempfile.NamedTemporaryFile(
+                                    suffix=osp.basename(f"ticket_file_{time_stamp[-8:]}.png"), 
+                                    delete=False
+                                    )
+        
+        factory.save(app.ticket_file.name)
     
     @hookimpl(hookwrapper=True)
     def piticket_setup_ticket_factory(self, factory):
@@ -47,6 +53,7 @@ class PrinterPlugin:
     def state_process_exit(self, app):
         """Cleanup ticket before proceeding to print
         """
+        # Reset modi
         app.modified_ticket = {}
 
     @hookimpl
@@ -56,3 +63,7 @@ class PrinterPlugin:
     @hookimpl 
     def state_print_exit(self, app):
         """Cleanup before exiting print state"""
+        # Delete file and reset the variable 
+        app.ticket_file.close()
+        os.unlink(app.ticket_file.name)
+        app.ticket_file = None

@@ -5,6 +5,7 @@ except ImportError:
     cups = None 
 
 import tempfile 
+import subprocess
 import os.path as osp 
 
 import pygame 
@@ -66,6 +67,17 @@ class Printer:
         if self.max_pages < 0 or self.count is None:
             return True 
         return self.count.printed < self.max_pages 
+
+    def is_connected(self):
+        """Check if printer is connected through the usb port
+        """
+        p = subprocess.run(['lsusb'],capture_output=True)
+        output = p.stdout.decode('utf-8').split('\n')
+        for dev in output:
+            dev = dev.lower()
+            if 'jet' in dev or 'printer' in dev:
+                return True
+        return False
     
     def print_file(self, filename, copies=1):
         """Send a file to the CUPS server to the default printer.

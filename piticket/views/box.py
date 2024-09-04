@@ -416,24 +416,25 @@ class Button(Box):
         self._hovered_callback_args = args 
         self._hovered_callback_kwargs = kwargs
 
-    def handle_events(self, event):
-        if not event:
-            return
-        if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
-            self._clicked = True
-            self._hovered = False
-            self._released = False
-        elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
-            self._released = True 
-            self._clicked = False
-            self._hovered = False
-        elif event.type == pygame.MOUSEMOTION:
-            if self.rect.collidepoint(event.pos):
-                self._hovered = True
-            elif not self.rect.collidepoint(event.pos):
+    def handle_events(self, events):
+        for event in events:
+            if not hasattr(event, 'pos'):
+                continue
+            if event.type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
+                self._clicked = True
                 self._hovered = False
-            self._released = False 
-            self._clicked = False
+                self._released = False
+            elif event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
+                self._released = True 
+                self._clicked = False
+                self._hovered = False
+            elif event.type == pygame.MOUSEMOTION:
+                if self.rect.collidepoint(event.pos):
+                    self._hovered = True
+                elif not self.rect.collidepoint(event.pos):
+                    self._hovered = False
+                self._released = False 
+                self._clicked = False
     
     def update(self, event, screen):
         self.handle_events(event)
@@ -530,13 +531,12 @@ class PopUpBox(Box):
     def started(self, started):
         self._started = started
 
-    def handle_events(self,event):
-        if not event:
-            return 
-        if event.type == pygame.MOUSEBUTTONUP\
-            and (self.btn1.rect.collidepoint(event.pos)\
-            or self.btn2.rect.collidepoint(event.pos)):
-            self.started = False
+    def handle_events(self,events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONUP\
+                and (self.btn1.rect.collidepoint(event.pos)\
+                or self.btn2.rect.collidepoint(event.pos)):
+                self.started = False
         
     def triggered(self, func, *args, **kwargs):
         self._triggered_callback_func = func 
@@ -650,14 +650,11 @@ class PopUpBoxProcessing(Box):
         self._triggered_callback_args = args 
         self._triggered_callback_kwargs = kwargs
 
-    def handle_events(self,event):
-        if not event:
-            return
-        # if event.type == pygame.MOUSEBUTTONUP and self.rect.collidepoint(event.pos):
-        #     self._released = True 
-        if event.type == self.event.type:
-            self._triggered = True
-            self.started = False
+    def handle_events(self,events):
+        for event in events: 
+            if event.type == self.event.type:
+                self._triggered = True
+                self.started = False
 
     def position_gif(self, image_surface, position='bottom-center'):
         """

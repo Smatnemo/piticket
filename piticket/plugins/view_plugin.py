@@ -40,9 +40,8 @@ class ViewPlugin():
     @hookimpl 
     def state_choose_do(self,cfg,app,win,events):
         """"""
-        event = app.find_button_event(events)
-        win.show_choice(event, tickets=app.ticket_choices)
-        if event:
+        win.show_choice(events, tickets=app.ticket_choices)
+        if events:
             # Reset timer if cursor is active
             self.screen_lock_timer.start()
         if int(self.screen_lock_timer.remaining())==self.timeout and not events:
@@ -72,9 +71,8 @@ class ViewPlugin():
     @hookimpl 
     def state_chosen_do(self,cfg,app,win,events):
         """"""
-        event = app.find_button_event(events)
-        win.show_choice(event,selected=app.chosen_ticket)
-        if event:
+        win.show_choice(events,selected=app.chosen_ticket)
+        if events:
             # Reset timer if cursor is active
             self.screen_lock_timer.start()
         if int(self.screen_lock_timer.remaining())==self.timeout and not events:
@@ -103,8 +101,7 @@ class ViewPlugin():
     @hookimpl 
     def state_translate_do(self,cfg,app,win,events):
         """"""
-        event = app.find_button_event(events)
-        win.show_translations(event)
+        win.show_translations(events)
 
     @hookimpl
     def state_translate_validate(self, cfg, app,win,events):
@@ -128,8 +125,7 @@ class ViewPlugin():
     @hookimpl 
     def state_future_tickets_do(self,cfg,app,win,events):
         """"""
-        event = app.find_button_event(events)
-        win.show_calendar(event)
+        win.show_calendar(events)
 
     @hookimpl
     def state_future_tickets_validate(self,cfg,app,win,events):
@@ -146,8 +142,7 @@ class ViewPlugin():
     @hookimpl 
     def state_recharge_do(self,cfg,app,win,events):
         """"""
-        event = app.find_button_event(events)
-        win.show_recharge(event)
+        win.show_recharge(events)
 
     @hookimpl
     def state_recharge_validate(self,cfg,app,win,events):
@@ -155,7 +150,6 @@ class ViewPlugin():
         change_event = app.find_change_event(events)
         if change_event:
             return change_event.state
-
 
     @hookimpl
     def state_process_enter(self,cfg,app,win):
@@ -165,7 +159,7 @@ class ViewPlugin():
 
     @hookimpl
     def state_process_validate(self,cfg,app,win,events):
-        if app.ticket_file and osp.isfile(app.ticket_file):
+        if app.ticket_file and osp.isfile(app.ticket_file.name):
             return 'pay'
             
     @hookimpl 
@@ -175,11 +169,10 @@ class ViewPlugin():
     @hookimpl 
     def state_pay_do(self,cfg,app,win,events):
         """"""
-        event = app.find_button_event(events)
-        win.show_pay(event, app.ticket_file)
+        win.show_pay(events, app.ticket_file.name)
+        event = app.process_payment(events)
         if event:
-            if hasattr(event, 'popup') and event.popup:
-                win.show_popup_processing_box('payment_process',app)
+            win.show_popup_processing_box('payment_process',app)
 
         if int(self.screen_lock_timer.remaining())==self.timeout and not events:
             win.show_popup_box('chosen',self.timeout,app)
@@ -212,8 +205,6 @@ class ViewPlugin():
                 return 'print'
             else:
                 return 'pay'
-
-
 
     @hookimpl
     def state_print_enter(self,cfg,app,win):

@@ -119,13 +119,13 @@ class Background():
 
         self._need_update = None
 
-        self.event = None
+        self.events = []
 
     def __str__(self):
         return "{}-{}".format(self._name, self.__class__.__name__)
 
-    def handle_events(self, event=None):
-        self.event = event
+    def handle_events(self, events=[]):
+        self.events = events
 
     def _write_texts(self, text, rect=None):
         """Create text surfaces to draw on window surface.
@@ -202,9 +202,9 @@ class Background():
         if self.title:
             self.title.draw(screen)
         if self.cancel_button:
-            self.cancel_button.update(self.event, screen)
+            self.cancel_button.update(self.events, screen)
         if self.back_button:
-            self.back_button.update(self.event, screen)
+            self.back_button.update(self.events, screen)
 
 
 class IntroBackground(Background):
@@ -409,29 +409,29 @@ class ChooseBackground(Background):
     def paint(self,screen):
         Background.paint(self,screen)
         if self.recharge_card:
-            self.recharge_card.update(self.event, screen)
+            self.recharge_card.update(self.events, screen)
         if self.all_travels:
-            self.all_travels.update(self.event, screen)
+            self.all_travels.update(self.events, screen)
         if self.collect_ticket:
-            self.collect_ticket.update(self.event, screen)
+            self.collect_ticket.update(self.events, screen)
         if self.second_title:
             self.second_title.draw(screen)
         if self.travel_box_options:
             self.travel_box_options.draw(screen)
         if self.left_options:
-            self.left_options.update(self.event,screen)
+            self.left_options.update(self.events,screen)
         if self.right_options:
-            self.right_options.update(self.event,screen)
+            self.right_options.update(self.events,screen)
         if self.card_text:
             self.card_text.draw(screen)
         if self.card_payment:
             self.card_payment.draw(screen)
         if self.translations:
-            self.translations.update(self.event, screen)
+            self.translations.update(self.events, screen)
         for flag in self.flags:
             flag.draw(screen)
         if self.future_tickets:
-            self.future_tickets.update(self.event, screen)
+            self.future_tickets.update(self.events, screen)
         
         
 class ChosenBackground(Background):
@@ -660,31 +660,31 @@ class ChosenBackground(Background):
     def paint(self, screen):
         Background.paint(self, screen)
         if self.departure_field:
-            self.departure_field.update(self.event,screen)
+            self.departure_field.update(self.events,screen)
         if self.destination_field:
-            self.destination_field.update(self.event,screen)
+            self.destination_field.update(self.events,screen)
         if self.date_field:
-            self.date_field.update(self.event,screen)
+            self.date_field.update(self.events,screen)
         if self.departure_time_field:
-            self.departure_time_field.update(self.event,screen)
+            self.departure_time_field.update(self.events,screen)
         if self.arrival_time_field:
-            self.arrival_time_field.update(self.event,screen)
+            self.arrival_time_field.update(self.events,screen)
         if self.route_field:
-            self.route_field.update(self.event,screen)
+            self.route_field.update(self.events,screen)
         if self.tickettype_field:
-            self.tickettype_field.update(self.event,screen)
+            self.tickettype_field.update(self.events,screen)
         if self.class_field:
-            self.class_field.update(self.event,screen)
+            self.class_field.update(self.events,screen)
         if self.railcard_field:
-            self.railcard_field.update(self.event,screen)
+            self.railcard_field.update(self.events,screen)
         if self.adults_field:
-            self.adults_field.update(self.event,screen)
+            self.adults_field.update(self.events,screen)
         if self.children_field:
-            self.children_field.update(self.event,screen)
+            self.children_field.update(self.events,screen)
         if self.total_field:
-            self.total_field.update(self.event,screen)
+            self.total_field.update(self.events,screen)
         if self.pay_button:
-            self.pay_button.update(self.event, screen)
+            self.pay_button.update(self.events, screen)
 
 class ProcessingBackground(Background):
     def __init__(self, surface):
@@ -884,15 +884,15 @@ class TranslateBackground(Background):
         if self.translations_box:
             self.translations_box.draw(screen)
         if self.english_button:
-            self.english_button.update(self.event, screen)
+            self.english_button.update(self.events, screen)
         if self.english_text:
             self.english_text.draw(screen)
         if self.french_button:
-            self.french_button.update(self.event, screen)
+            self.french_button.update(self.events, screen)
         if self.french_text:
             self.french_text.draw(screen)
         if self.pidgin_button:
-            self.pidgin_button.update(self.event, screen)
+            self.pidgin_button.update(self.events, screen)
         if self.pidgin_text:
             self.pidgin_text.draw(screen)
 
@@ -978,7 +978,7 @@ class PayBackground(Background):
         if self.ticket_box:
             self.ticket_box.draw(screen)
         if self.pay_button:
-            self.pay_button.update(self.event, screen)
+            self.pay_button.update(self.events, screen)
 
 class PaymentSuccessfulBackground(Background):
     def __init__(self, surface):

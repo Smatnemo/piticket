@@ -59,7 +59,7 @@ class PiWindow():
             self._update_background(background.IntroBackground(self.surface))
 
     
-    def show_choice(self, event, tickets={}, selected=None):
+    def show_choice(self, events, tickets={}, selected=None):
         """Display all choices when nothing is selected
         :param event: filtered event for button actions
         :type event: pygame.event.Event
@@ -69,9 +69,9 @@ class PiWindow():
         :type selected: tuple
         """
         if not selected:
-            self._update_background(background.ChooseBackground(tickets, self.surface), event)
+            self._update_background(background.ChooseBackground(tickets, self.surface), events)
         else:
-            self._update_background(background.ChosenBackground(selected, self.surface), event)
+            self._update_background(background.ChosenBackground(selected, self.surface), events)
 
     def show_calendar(self, event):
         """Display dates using a calendar.
@@ -136,8 +136,8 @@ class PiWindow():
 
         while self._popup_box.started:
             events = pygame.event.get()
-            event = app.find_button_event(events)
-            self._popup_box.update(event, self.surface)
+            # event = app.find_button_event(events)
+            self._popup_box.update(events, self.surface)
             pygame.display.update()
 
         self._popup_box = None
@@ -163,8 +163,7 @@ class PiWindow():
         app.payment_status = True
         while self._popup_box.started:
             events = pygame.event.get()
-            event = app.find_button_event(events)
-            self._popup_box.update(event, self.surface)
+            self._popup_box.update(events, self.surface)
             pygame.display.update()
         self._popup_box = None
 
