@@ -53,8 +53,6 @@ class PrinterPlugin:
     def state_process_exit(self, app):
         """Cleanup ticket before proceeding to print
         """
-        # Reset modi
-        app.modified_ticket = {}
 
     @hookimpl
     def state_print_enter(self, app):

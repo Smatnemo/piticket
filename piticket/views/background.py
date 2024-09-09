@@ -897,9 +897,9 @@ class TranslateBackground(Background):
             self.pidgin_text.draw(screen)
 
 class PayBackground(Background):
-    def __init__(self, ticket_file, surface):
+    def __init__(self, ticket_filename, modified_ticket, surface):
         Background.__init__(self, 'card_payment', surface=surface)
-        self.ticket_file = ticket_file
+        self.ticket_filename = ticket_filename
         self.pay_box = Box(parent=self.main_content,
                                 x=0, y=0,
                                 width=self.main_content.width,
@@ -941,12 +941,29 @@ class PayBackground(Background):
                                 border=0,
                                 border_radius=15,
                                 border_color=(255,0,0), 
-                                content=get_filename(ticket_file),
+                                content=get_filename(ticket_filename),
                                 content_color=(0,0,0),
                                 content_position=Box.CENTER,
                                 content_size=(750,450),
                                 color=self.get_color(),
                                 position=Box.CENTER,
+                                interactable=False)
+        self.price_box = Box(parent=self.pay_box,
+                                x=self.ticket_box.x, 
+                                y=self.ticket_box.y+self.ticket_box.height+100,
+                                width=self.pay_box.width,
+                                height=100, 
+                                padding=10,
+                                margin=0,
+                                border=0,
+                                border_radius=15,
+                                border_color=(255,0,0), 
+                                content=modified_ticket['price'].content,
+                                content_color=(0,0,0),
+                                content_position=Box.CENTER,
+                                content_size=(750,100),
+                                color=self.get_color(),
+                                position=None,
                                 interactable=False)
         self.pay_button = Button(parent=self.pay_box,
                                 x=0, y=0,
@@ -967,7 +984,7 @@ class PayBackground(Background):
         self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP, state='chosen'))
     
     def __str__(self):
-        return Background.__str__(self)+f'{self.ticket_file}'
+        return Background.__str__(self)+f'{self.ticket_filename}'
 
     def paint(self, screen):
         Background.paint(self, screen)
@@ -977,6 +994,8 @@ class PayBackground(Background):
             self.nfc_box.draw(screen)
         if self.ticket_box:
             self.ticket_box.draw(screen)
+        if self.price_box:
+            self.price_box.draw(screen)
         if self.pay_button:
             self.pay_button.update(self.events, screen)
 

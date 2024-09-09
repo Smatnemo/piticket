@@ -169,13 +169,13 @@ class ViewPlugin():
     @hookimpl 
     def state_pay_do(self,cfg,app,win,events):
         """"""
-        win.show_pay(events, app.ticket_file.name)
+        win.show_pay(events, app.ticket_file.name, app.modified_ticket)
         event = app.process_payment(events)
         if event:
             win.show_popup_processing_box('payment_process',app)
 
         if int(self.screen_lock_timer.remaining())==self.timeout and not events:
-            win.show_popup_box('chosen',self.timeout,app)
+            win.show_popup_box('pay',self.timeout,app)
 
     @hookimpl
     def state_pay_validate(self,cfg,app,win,events):

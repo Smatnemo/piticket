@@ -99,10 +99,15 @@ class PiWindow():
         """
         self._update_background(background.RechargeBackground(self.surface), event)
 
-    def show_pay(self, event, modified_ticket):
+    def show_pay(self, event, filename, modified_ticket):
         """Display instructions for payment
+        :param filename: the temporary filename where the ticket is stored.
+                    Read for display
+        :type filename: str
+        :param modified_ticket: details chosen by the user
+        :type modified_ticket: dict
         """
-        self._update_background(background.PayBackground(modified_ticket, self.surface), event)
+        self._update_background(background.PayBackground(filename, modified_ticket, self.surface), event)
 
     def show_printing(self):
         """Display when printing ticket
@@ -126,7 +131,8 @@ class PiWindow():
         :param app: the main pi application 
         :type app: PiApplication
         """
-        self._popup_box = PopUpBox(parent=self.surface, content_color=(127,127,127), color=self.bg_color, timeout=timeout)
+        self._popup_box = PopUpBox(parent=self.surface, width=400, height=300,
+                                    content_color=(127,127,127), color=self.bg_color, timeout=timeout)
         # End pop up box when Yes button is clicked and return to to same state
         self._popup_box.btn1.clicked(app.post_event, state_name)
         # End pop up box when No button is clicked and return to wait state
@@ -136,7 +142,6 @@ class PiWindow():
 
         while self._popup_box.started:
             events = pygame.event.get()
-            # event = app.find_button_event(events)
             self._popup_box.update(events, self.surface)
             pygame.display.update()
 
@@ -148,7 +153,7 @@ class PiWindow():
                                             parent=self.surface,
                                             gif_image='Spinner_transparent',
                                             x=0, y=0,
-                                            width=300, height=200,
+                                            width=400, height=300,
                                             position='center',
                                             margin=20, padding=10,
                                             border=1, border_radius=3,
