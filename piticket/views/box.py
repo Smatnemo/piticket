@@ -598,14 +598,18 @@ class PopUpBoxProcessing(Box):
                 content_size=(),
                 color=(133,133,133),
                 interactable=False,
-                gif_image=None):
+                gif_image=None,
+                post_event=False):
         """:param gif_name: the name of the folder with gif frames.
            :type gif_name: str
-           :param event: specific event to respond to
+           :param event: specific event to respond to or break loop
            :type event: pygame.event.Event
+           :param post_event: post the event that matches event.type
+           :type post_event: bool
         """
         self.event = event 
         self.gif_image = gif_image
+        self.post_event = post_event
 
         Box.__init__(self, 
                 parent=parent, x=x, y=y,
@@ -655,6 +659,8 @@ class PopUpBoxProcessing(Box):
             if event.type == self.event.type:
                 self._triggered = True
                 self.started = False
+                if self.post_event:
+                    self.triggered(pygame.event.post, event)
 
     def position_gif(self, image_surface, position='bottom-center'):
         """

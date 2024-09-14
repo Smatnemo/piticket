@@ -1,10 +1,11 @@
 
+import time
 import pygame
 import os.path as osp
 from piticket import project_name 
 from piticket import hookimpl 
 from piticket.language import change_language
-from piticket.utils import PoolingTimer
+from piticket.utils import PoolingTimer, LOGGER
 
 class ViewPlugin():
     name = f'{project_name}-core:view'
@@ -134,11 +135,6 @@ class ViewPlugin():
         if change_event:
             return change_event.state
 
-    @hookimpl
-    def state_future_tickets_exit(self,cfg,app,win):
-        """"""
-
-
     @hookimpl 
     def state_recharge_do(self,cfg,app,win,events):
         """"""
@@ -163,7 +159,7 @@ class ViewPlugin():
             return 'pay'
             
     @hookimpl 
-    def state_pay_enter(self):
+    def state_pay_enter(self,app):
         self.screen_lock_timer.start()
 
     @hookimpl 
@@ -171,20 +167,30 @@ class ViewPlugin():
         """"""
         win.show_pay(events, app.ticket_file.name, app.modified_ticket)
         event = app.process_payment(events)
-        if event:
-            win.show_popup_processing_box('payment_process',app)
+        if event and event.status=='processing':
+            win.show_popup_processing_box('process')
 
         if int(self.screen_lock_timer.remaining())==self.timeout and not events:
             win.show_popup_box('pay',self.timeout,app)
 
     @hookimpl
     def state_pay_validate(self,cfg,app,win,events):
+        # Process back button and cancel buttons here
         change_event = app.find_change_event(events)
         if change_event:
             return change_event.state
-
+        # Process payment event here
+        payment_event = app.process_payment(events)
+        if payment_event and payment_event.status != 'processing':
+            if payment_event.status == 'approved':
+                app.payment_status = True
+            if payment_event.status == 'failed':
+                app.payment_status = False
+            return 'payment_process'
+        
         if self.screen_lock_timer.is_timeout():
             return 'wait'
+            
 
     @hookimpl
     def state_payment_process_enter(self,cfg,app,win):

@@ -980,8 +980,6 @@ class PayBackground(Background):
                                 content_size=(),
                                 color=self._header.get_color(),
                                 position=Box.BOTTOMCENTER)
-        self.pay_button.clicked(post, Event(pygame.MOUSEBUTTONUP, popup='processing', pos=(0,0)))
-        self.back_button.clicked(post, Event(pygame.MOUSEBUTTONUP, state='chosen'))
     
     def __str__(self):
         return Background.__str__(self)+f'{self.ticket_filename}'
@@ -996,8 +994,7 @@ class PayBackground(Background):
             self.ticket_box.draw(screen)
         if self.price_box:
             self.price_box.draw(screen)
-        if self.pay_button:
-            self.pay_button.update(self.events, screen)
+
 
 class PaymentSuccessfulBackground(Background):
     def __init__(self, surface):

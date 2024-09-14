@@ -7,7 +7,13 @@ hookspec = HookspecMarker(project_name)
 def piticket_setup_ticket_factory(factory):
     """Setup factory for building ticket
     """
-    
+
+@hookspec
+def piticket_cleanup(app):
+    """Clean up threads left alive or release
+    any resource being held
+    """
+
 @hookspec 
 def state_wait_enter(cfg,app,win):
     """"""

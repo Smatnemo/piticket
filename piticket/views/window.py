@@ -4,6 +4,8 @@ import os
 from pygame.event import post, Event
 from piticket.views import background
 from piticket.utils import LOGGER
+from piticket.language import get_translated_text
+from piticket.payment_terminal import PAYMENT_STATUS_EVENT
 from piticket.views.box import PopUpBox, PopUpBoxProcessing
 
 class PiWindow():
@@ -147,9 +149,12 @@ class PiWindow():
 
         self._popup_box = None
     
-    def show_popup_processing_box(self, state_name, app):
-                
-        self._popup_box = PopUpBoxProcessing(event=Event(pygame.MOUSEBUTTONUP,), 
+    def show_popup_processing_box(self, text):
+        """Create a pop up box with a gif for progress
+        :param text: the key for translated text to be used when showing progress
+        :type text: str"""        
+        self._popup_box = PopUpBoxProcessing(event=Event(PAYMENT_STATUS_EVENT,),
+                                            post_event=True, 
                                             parent=self.surface,
                                             gif_image='Spinner_transparent',
                                             x=0, y=0,
@@ -158,14 +163,13 @@ class PiWindow():
                                             margin=20, padding=10,
                                             border=1, border_radius=3,
                                             border_color=(0,0,0),
-                                            content='Processing payment',
+                                            content=get_translated_text(text),
                                             content_color=self.text_color,
                                             content_position='top-center',
                                             content_size=(),
                                             color=self.bg_color,
                                             interactable=False)
-        self._popup_box.triggered(post, Event(pygame.MOUSEBUTTONUP, state=state_name))
-        app.payment_status = True
+        # self._popup_box.triggered(post, Event(pygame.MOUSEBUTTONUP, status='approved', state=state_name))
         while self._popup_box.started:
             events = pygame.event.get()
             self._popup_box.update(events, self.surface)

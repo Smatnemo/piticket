@@ -20,6 +20,7 @@ from piticket.states import StatesMachine
 from piticket.config import PiConfigParser
 from piticket.plugins import create_plugin_manager
 from piticket.printer import Printer
+from piticket.payment_terminal import PaymentTerminal, PAYMENT_STATUS_EVENT
 
 
 d = datetime.fromtimestamp(time.time())
@@ -39,14 +40,14 @@ class PiApplication():
         self._pm = plugin_manager
 
         self.chosen_ticket = None
+        self.modified_ticket = None
         self.ticket_choices = travels
 
         self.active_state = None 
         self.previous_state = None
 
+        self.pay = PaymentTerminal()
         self.payment_status = None
-
-        self.modified_ticket = None
 
         self.ticket_template = 'nrc_trainticket.xml'
 
@@ -106,14 +107,11 @@ class PiApplication():
         return 
 
     def process_payment(self, events):
-        """Filter events for starting the payment process
-        :param events: events from the event queue
-        :type events: list
+        """Listen to the payment terminal
         """
         for event in events:
-            if event.type == pygame.MOUSEBUTTONUP and hasattr(event, 'popup'):
+            if event.type == PAYMENT_STATUS_EVENT:
                 return event
-        return
         
     def main_loop(self):
         try:
@@ -143,6 +141,7 @@ class PiApplication():
             LOGGER.error(get_crash_message())
         finally:
             pygame.quit()
+            self._pm.hook.piticket_cleanup(app=self)
 
 
 def main():
