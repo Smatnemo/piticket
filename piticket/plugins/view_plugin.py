@@ -136,6 +136,10 @@ class ViewPlugin():
             return change_event.state
 
     @hookimpl 
+    def state_recharge_enter(self, win):
+        win.show_recharge([])
+
+    @hookimpl 
     def state_recharge_do(self,cfg,app,win,events):
         """"""
         win.show_recharge(events)

@@ -22,4 +22,5 @@ class PayTerminalPlugin():
         app.pay.close()
         app.pay.reset()
 
+# Bug: When pop up with timer comes up, it closes main thread without closing the thread here
     

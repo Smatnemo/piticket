@@ -4,6 +4,7 @@ from pluggy import PluginManager
 from piticket.plugins import hookspecs
 from piticket.plugins.view_plugin import ViewPlugin
 from piticket.plugins.printer_plugin import PrinterPlugin
+from piticket.plugins.smartcard_plugin import SmartCardPlugin
 from piticket.plugins.pay_terminal_plugin import PayTerminalPlugin 
 
 def create_plugin_manager(project_name):
@@ -60,7 +61,8 @@ class PiPluginManager(PluginManager):
             
         plugins += [ViewPlugin(self), # Last called
                     PrinterPlugin(self),
-                    PayTerminalPlugin(self)] # LIFO, First Called
+                    PayTerminalPlugin(self),
+                    SmartCardPlugin(self)] # LIFO, First Called
 
         for plugin in plugins:
             self.register(plugin, name=getattr(plugin, '', None))

@@ -20,6 +20,7 @@ from piticket.states import StatesMachine
 from piticket.config import PiConfigParser
 from piticket.plugins import create_plugin_manager
 from piticket.printer import Printer
+from piticket.smartcard import SmartCard
 from piticket.payment_terminal import PaymentTerminal, PAYMENT_STATUS_EVENT
 
 
@@ -50,7 +51,6 @@ class PiApplication():
         self.payment_status = None
 
         self.ticket_template = 'nrc_trainticket.xml'
-
         self.ticket_file = None
 
         self.printer = Printer()
@@ -58,11 +58,9 @@ class PiApplication():
             LOGGER.info('connected')
         else:
             LOGGER.warning('Not connected')
-    
         self.print_copies = 1
-
         self.count = 0
-        
+
         self.states_machine = StatesMachine(self._pm,config,self,self.win)
         self.states_machine.add_state('wait')
         self.states_machine.add_state('choose')
